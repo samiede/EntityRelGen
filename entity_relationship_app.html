@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Entity Relationship Builder</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+    }
+    #canvas {
+      flex: 2;
+      border: 2px solid #ccc;
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #controls {
+      flex: 1;
+      border-left: 2px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .entity {
+      position: absolute;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: move;
+      color: #000;
+      resize: both;
+      overflow: auto;
+      min-width: 50px;
+      min-height: 30px;
+    }
+    .control-card {
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #eee;
+    }
+    input, textarea, select, button {
+      margin-top: 5px;
+      display: block;
+      width: 100%;
+    }
+    svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .entity-summary {
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      padding: 5px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    .relationship-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f8f8;
+      padding: 5px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .relationship-summary button,
+    .entity-summary button {
+      margin-top: 5px;
+      width: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas">
+    <svg id="lines"></svg>
+  </div>
+  <div id="controls">
+    <div class="control-card">
+      <strong>Create Entity</strong>
+      <input type="text" id="entity-name" placeholder="Entity Name">
+      <textarea id="entity-attributes" placeholder="Attributes (one per line)"></textarea>
+      <button onclick="addCustomEntity()">Add Entity</button>
+    </div>
+    <div class="control-card">
+      <strong>Create Relationship</strong>
+      <select id="source-entity"></select>
+      <select id="target-entity"></select>
+      <input type="text" id="relation-label" placeholder="Relationship Label">
+      <button onclick="createRelationship()">Add Relationship</button>
+      <div id="relationship-list"></div>
+    </div>
+    <div class="control-card">
+      <strong>Entities</strong>
+      <div id="entity-list"></div>
+    </div>
+    <div class="control-card">
+      <strong>Scene Graph</strong>
+      <button onclick="exportSceneGraph()">Export</button>
+      <button onclick="copySceneGraph()">Copy to Clipboard</button>
+      <pre id="scene-output"></pre>
+    </div>
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const svg = document.getElementById('lines');
+    const sourceSelect = document.getElementById('source-entity');
+    const targetSelect = document.getElementById('target-entity');
+    const entityList = document.getElementById('entity-list');
+    const relationshipList = document.getElementById('relationship-list');
+    const entities = [];
+    const relationships = [];
+
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function updateEntitySelectOptions() {
+      [sourceSelect, targetSelect].forEach(select => {
+        select.innerHTML = '';
+        entities.forEach(e => {
+          const option = document.createElement('option');
+          option.value = e.name;
+          option.textContent = e.name;
+          select.appendChild(option);
+        });
+      });
+    }
+
+    function updateEntityList() {
+      entityList.innerHTML = '';
+      entities.forEach((entity, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'entity-summary';
+        wrapper.style.backgroundColor = entity.color;
+
+        const nameInput = document.createElement('input');
+        nameInput.value = entity.name;
+        nameInput.onchange = () => {
+          entity.name = nameInput.value;
+          entity.el.textContent = entity.name;
+          updateEntitySelectOptions();
+          updateLines();
+        };
+        wrapper.appendChild(nameInput);
+
+        const textarea = document.createElement('textarea');
+        textarea.value = entity.attributes.join('\n');
+        textarea.onchange = () => {
+          entity.attributes = textarea.value.trim().split('\n');
+          entity.el.dataset.attributes = JSON.stringify(entity.attributes);
+        };
+        wrapper.appendChild(textarea);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => {
+          canvas.removeChild(entity.el);
+          entities.splice(idx, 1);
+          updateEntityList();
+          updateEntitySelectOptions();
+          updateLines();
+        };
+        wrapper.appendChild(deleteBtn);
+
+        entityList.appendChild(wrapper);
+      });
+    }
+
+    function updateRelationshipList() {
+      relationshipList.innerHTML = '';
+      relationships.forEach((rel, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relationship-summary';
+        wrapper.textContent = `${rel.source} → ${rel.target}: ${rel.label}`;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✕';
+        deleteBtn.onclick = () => {
+          relationships.splice(idx, 1);
+          updateRelationshipList();
+          updateLines();
+        };
+        wrapper.appendChild(deleteBtn);
+
+        relationshipList.appendChild(wrapper);
+      });
+    }
+
+    function makeDraggable(el) {
+      let isDragging = false;
+      let offsetX = 0, offsetY = 0;
+
+      el.addEventListener('mousedown', (e) => {
+        if (e.target !== el) return;
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          el.style.left = `${e.pageX - canvas.offsetLeft - offsetX}px`;
+          el.style.top = `${e.pageY - canvas.offsetTop - offsetY}px`;
+          updateLines();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+      });
+    }
+
+    function addCustomEntity() {
+      const name = document.getElementById('entity-name').value.trim();
+      const attributes = document.getElementById('entity-attributes').value.trim().split('\n');
+      if (!name) return;
+
+      const color = getRandomColor();
+      const div = document.createElement('div');
+      div.classList.add('entity');
+      div.textContent = name;
+      div.style.backgroundColor = color;
+      div.style.left = '50px';
+      div.style.top = '50px';
+      div.style.width = '100px';
+      div.style.height = '60px';
+      div.dataset.name = name;
+      div.dataset.color = color;
+      div.dataset.attributes = JSON.stringify(attributes);
+
+      makeDraggable(div);
+      canvas.appendChild(div);
+
+      entities.push({ el: div, name, attributes, color });
+      updateEntitySelectOptions();
+      updateEntityList();
+      updateLines();
+    }
+
+    function createRelationship() {
+      const source = sourceSelect.value;
+      const target = targetSelect.value;
+      const label = document.getElementById('relation-label').value.trim();
+      if (!source || !target || !label || source === target) return;
+      relationships.push({ source, target, label });
+      updateRelationshipList();
+      updateLines();
+    }
+
+    function updateLines() {
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <polygon points="0 0, 10 5, 0 10" fill="#555" />
+          </marker>
+        </defs>
+      `;
+
+      relationships.forEach(rel => {
+        const from = entities.find(e => e.name === rel.source)?.el;
+        const to = entities.find(e => e.name === rel.target)?.el;
+        if (!from || !to) return;
+
+        const x1 = from.offsetLeft + from.offsetWidth / 2;
+        const y1 = from.offsetTop + from.offsetHeight / 2;
+        const x2 = to.offsetLeft + to.offsetWidth / 2;
+        const y2 = to.offsetTop + to.offsetHeight / 2;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', '#555');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('marker-end', 'url(#arrow)');
+        svg.appendChild(line);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', (x1 + x2) / 2);
+        text.setAttribute('y', (y1 + y2) / 2 - 5);
+        text.textContent = rel.label;
+        svg.appendChild(text);
+      });
+    }
+  </script>
+</body>
+</html>
