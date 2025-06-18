@@ -90,9 +90,10 @@ The Entity Relationship Builder features a split-panel interface optimized for C
 Entities are rendered directly on Canvas with mathematical precision:
 
 **Canvas Entity Rendering:**
-- **Shape**: Rounded rectangles with gradient fills
+- **Shape**: Clean rounded rectangles with gradient fills
 - **Colors**: Semantic color generation with gradient effects
-- **Text**: Professional typography with readable backgrounds
+- **Text**: Clean typography positioned at top-left (no background)
+- **Content**: Entity name only (attributes managed via control panel)
 - **Interactions**: Hover effects with dynamic shadows
 - **Performance**: 60fps smooth animations and transitions
 
@@ -103,6 +104,7 @@ Relationships use mathematical algorithms for perfect connections:
 - **Lines**: Edge-to-edge connections with gradient strokes
 - **Arrows**: Mathematically precise directional indicators
 - **Labels**: Rounded background labels with optimal positioning
+- **Layering**: Rendered above entities for maximum visibility
 - **Performance**: Hardware-accelerated drawing operations
 
 ### Visual Effects

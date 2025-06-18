@@ -168,41 +168,23 @@ function drawEntity(entity) {
   ctx.lineWidth = isHovered ? 2 : 1;
   ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
   
-  // Render text and attributes
+  // Render clean entity name
   drawEntityText(entity);
-  if (entity.height > 60 && entity.attributes.length > 0) {
-    drawEntityAttributes(entity);
-  }
 }
 ```
 
-### Text Rendering with Background
+### Clean Text Rendering
 ```javascript
 function drawEntityText(entity) {
-  const centerX = entity.x + entity.width / 2;
-  const centerY = entity.y + entity.height / 2;
-  
-  // Set text properties
+  // Set text properties for top-left positioning
   ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fontWeight = '500';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Measure text for background
-  const textWidth = ctx.measureText(entity.name).width;
-  
-  // Draw text background for readability
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.fillRect(
-    centerX - textWidth/2 - 4, 
-    centerY - 8, 
-    textWidth + 8, 
-    16
-  );
-  
-  // Draw text
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
   ctx.fillStyle = '#1d1d1f';
-  ctx.fillText(entity.name, centerX, centerY);
+  
+  // Draw text at top-left corner with padding (no background)
+  ctx.fillText(entity.name, entity.x + 8, entity.y + 8);
 }
 ```
 

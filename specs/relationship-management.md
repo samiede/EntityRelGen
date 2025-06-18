@@ -257,6 +257,7 @@ function drawRelationshipLabel(label, startPoint, endPoint) {
 - **Label Background**: Rounded white background with subtle border
 - **Direction**: Unidirectional from source to target
 - **Performance**: Hardware-accelerated Canvas rendering
+- **Layer Priority**: Relationships render above entities for maximum visibility
 
 ## Relationship Management Interface
 
@@ -327,17 +328,17 @@ Relationship visualizations update automatically when:
 - Entities are deleted
 
 ### Canvas Render Function
-The main render function handles complete re-rendering of all relationships:
+The main render function handles complete re-rendering with optimal layering:
 
 ```javascript
 function render() {
   // Clear canvas
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   
-  // Draw layers in order
+  // Draw layers for optimal visibility
   drawGrid();
-  drawRelationships();  // Behind entities
-  drawEntities();       // On top
+  drawEntities();       // Draw entities first
+  drawRelationships();  // Draw relationships on top for visibility
 }
 
 function drawRelationships() {

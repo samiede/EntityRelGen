@@ -85,8 +85,8 @@ const relationships = [];   // Array of relationship objects
 - `requestRender()` - Optimized render request batching
 
 **Drawing Functions:**
-- `drawEntities()` - Render all entities with gradients and effects
-- `drawRelationships()` - Render connections with mathematical precision
+- `drawEntities()` - Render clean entities with top-left names (no attributes)
+- `drawRelationships()` - Render connections above entities for visibility
 - `drawGrid()` - Subtle alignment grid system
 
 **Interaction Handling:**

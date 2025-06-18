@@ -460,11 +460,11 @@
       // Draw grid (subtle)
       drawGrid();
       
-      // Draw relationships first (behind entities)
-      drawRelationships();
-      
-      // Draw entities
+      // Draw entities first
       drawEntities();
+      
+      // Draw relationships on top (above entities)
+      drawRelationships();
     }
     
     function drawGrid() {
@@ -526,56 +526,15 @@
       ctx.setLineDash([]);
       ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
       
-      // Entity name
+      // Entity name - top left corner, no background
       ctx.fillStyle = '#1d1d1f';
       ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fontWeight = '500';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
       
-      const centerX = entity.x + entity.width / 2;
-      const centerY = entity.y + entity.height / 2;
-      
-      // Text background for better readability
-      const textWidth = ctx.measureText(entity.name).width;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.fillRect(
-        centerX - textWidth/2 - 4, 
-        centerY - 8, 
-        textWidth + 8, 
-        16
-      );
-      
-      // Draw text
-      ctx.fillStyle = '#1d1d1f';
-      ctx.fillText(entity.name, centerX, centerY);
-      
-      // Draw attributes if space allows
-      if (entity.height > 60 && entity.attributes.length > 0) {
-        ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillStyle = 'rgba(29, 29, 31, 0.7)';
-        
-        const maxLines = Math.floor((entity.height - 40) / 14);
-        const displayAttributes = entity.attributes.slice(0, maxLines);
-        
-        displayAttributes.forEach((attr, index) => {
-          const attrText = attr.length > 15 ? attr.substring(0, 12) + '...' : attr;
-          ctx.fillText(
-            attrText, 
-            entity.x + 8, 
-            entity.y + 30 + (index * 14)
-          );
-        });
-        
-        if (entity.attributes.length > maxLines) {
-          ctx.fillText(
-            `+${entity.attributes.length - maxLines} more...`, 
-            entity.x + 8, 
-            entity.y + 30 + (maxLines * 14)
-          );
-        }
-      }
+      // Draw text at top-left corner with padding
+      ctx.fillText(entity.name, entity.x + 8, entity.y + 8);
     }
     
     function drawRelationships() {

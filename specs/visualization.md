@@ -14,6 +14,13 @@ The Entity Relationship Builder leverages HTML5 Canvas for unprecedented perform
 
 ## Canvas Architecture - High-Performance Rendering
 
+### Optimized Visual Hierarchy
+The Canvas rendering system uses a carefully designed layer system for optimal visibility:
+- **Entities**: Clean rectangles with top-left positioned names (no attribute clutter)
+- **Relationships**: Rendered above entities to ensure visibility even when entities overlap
+- **Grid**: Subtle background guidelines for alignment
+- **Interaction**: Real-time hover and drag feedback
+
 ### Canvas Environment Setup
 ```javascript
 function initCanvas() {
@@ -51,10 +58,10 @@ function render() {
   // Clear canvas
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
   
-  // Draw layers in order
+  // Draw layers in order for optimal visibility
   drawGrid();
-  drawRelationships();  // Behind entities
-  drawEntities();       // On top
+  drawEntities();       // Draw entities first
+  drawRelationships();  // Draw relationships on top for visibility
 }
 ```
 
@@ -124,43 +131,23 @@ function drawEntity(entity) {
   ctx.lineWidth = isHovered ? 2 : 1;
   ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
   
-  // Render text with background
+  // Render clean entity name
   drawEntityText(entity);
-  
-  // Draw attributes if space allows
-  if (entity.height > 60 && entity.attributes.length > 0) {
-    drawEntityAttributes(entity);
-  }
 }
 ```
 
-### Advanced Text Rendering
+### Clean Text Rendering
 ```javascript
 function drawEntityText(entity) {
-  const centerX = entity.x + entity.width / 2;
-  const centerY = entity.y + entity.height / 2;
-  
-  // Set text properties
+  // Set text properties for top-left positioning
   ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
   ctx.fontWeight = '500';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  // Measure text for background
-  const textWidth = ctx.measureText(entity.name).width;
-  
-  // Draw text background for readability
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.fillRect(
-    centerX - textWidth/2 - 4, 
-    centerY - 8, 
-    textWidth + 8, 
-    16
-  );
-  
-  // Draw text
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
   ctx.fillStyle = '#1d1d1f';
-  ctx.fillText(entity.name, centerX, centerY);
+  
+  // Draw text at top-left corner with padding (no background)
+  ctx.fillText(entity.name, entity.x + 8, entity.y + 8);
 }
 ```
 
