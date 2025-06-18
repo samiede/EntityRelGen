@@ -4,83 +4,202 @@
   <meta charset="UTF-8">
   <title>Entity Relationship Builder</title>
   <style>
+    /* Revolutionary Glassmorphic Design System */
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       display: flex;
     }
-    #canvas {
+
+    /* Canvas Container - High Performance Rendering */
+    #canvas-container {
       flex: 2;
-      border: 2px solid #ccc;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
       position: relative;
-      height: 100vh;
+      margin: 20px 10px 20px 20px;
+      height: calc(100vh - 40px);
       overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     }
-    #controls {
-      flex: 1;
-      border-left: 2px solid #ccc;
-      padding: 10px;
-      box-sizing: border-box;
-      overflow-y: auto;
-    }
-    .entity {
-      position: absolute;
-      padding: 10px;
-      border-radius: 10px;
-      cursor: move;
-      color: #000;
-      resize: both;
-      overflow: auto;
-      min-width: 50px;
-      min-height: 30px;
-    }
-    .control-card {
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #eee;
-    }
-    input, textarea, select, button {
-      margin-top: 5px;
-      display: block;
-      width: 100%;
-    }
-    svg {
-      position: absolute;
+
+    #main-canvas {
       width: 100%;
       height: 100%;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 0;
+      display: block;
+      border-radius: 20px;
+      cursor: default;
     }
+
+    /* Grid is now drawn on Canvas */
+
+    /* Controls Panel - Performance Optimized */
+    #controls {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 20px;
+      margin: 20px 20px 20px 10px;
+      height: calc(100vh - 40px);
+      overflow-y: auto;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Entities are now rendered on Canvas */
+
+    /* Control Cards */
+    .control-card {
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px) saturate(120%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .control-card strong {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    /* Form Elements */
+    input, textarea, select, button {
+      margin-top: 8px;
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: rgba(0, 122, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      background: linear-gradient(145deg, 
+        rgba(0, 122, 255, 0.8) 0%,
+        rgba(0, 122, 255, 0.6) 100%);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(0, 122, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+      background: linear-gradient(145deg, 
+        rgba(0, 122, 255, 0.9) 0%,
+        rgba(0, 122, 255, 0.7) 100%);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    /* Relationships are now rendered on Canvas */
+
+    /* Entity Summary Cards */
     .entity-summary {
-      border: 1px solid #aaa;
-      border-radius: 5px;
-      padding: 5px;
-      margin-bottom: 10px;
-      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
+
+    /* Relationship Summary Items */
     .relationship-summary {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #f8f8f8;
-      padding: 5px;
-      margin-top: 4px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 10px 16px;
+      margin-top: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
     }
+
     .relationship-summary button,
     .entity-summary button {
-      margin-top: 5px;
+      margin-top: 8px;
       width: auto;
+      padding: 6px 12px;
+      font-size: 12px;
     }
+
+    /* Scene Output */
+    #scene-output {
+      background: rgba(0, 0, 0, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Accessibility */
+    @media (prefers-contrast: high) {
+      .entity {
+        border: 2px solid #000;
+        background: #fff;
+        color: #000;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Canvas handles all interactions and animations */
   </style>
 </head>
 <body>
-  <div id="canvas">
-    <svg id="lines"></svg>
+  <div id="canvas-container">
+    <canvas id="main-canvas"></canvas>
   </div>
   <div id="controls">
     <div class="control-card">
@@ -109,22 +228,482 @@
     </div>
   </div>
   <script>
-    const canvas = document.getElementById('canvas');
-    const svg = document.getElementById('lines');
+    // Canvas-based Entity Relationship Builder
+    const canvasContainer = document.getElementById('canvas-container');
+    const canvas = document.getElementById('main-canvas');
+    const ctx = canvas.getContext('2d');
     const sourceSelect = document.getElementById('source-entity');
     const targetSelect = document.getElementById('target-entity');
     const entityList = document.getElementById('entity-list');
     const relationshipList = document.getElementById('relationship-list');
+    
+    // Data structures
     const entities = [];
     const relationships = [];
+    
+    // Canvas state
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    let devicePixelRatio = window.devicePixelRatio || 1;
+    
+    // Interaction state
+    let isDragging = false;
+    let dragTarget = null;
+    let dragOffset = { x: 0, y: 0 };
+    let mousePos = { x: 0, y: 0 };
+    let hoveredEntity = null;
+    
+    // Initialize canvas
+    function initCanvas() {
+      const rect = canvasContainer.getBoundingClientRect();
+      canvasWidth = rect.width;
+      canvasHeight = rect.height;
+      
+      // Set canvas size for high DPI displays
+      canvas.width = canvasWidth * devicePixelRatio;
+      canvas.height = canvasHeight * devicePixelRatio;
+      canvas.style.width = canvasWidth + 'px';
+      canvas.style.height = canvasHeight + 'px';
+      
+      // Scale context for high DPI
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      
+      // Set up canvas event listeners
+      setupCanvasEvents();
+      
+      // Start render loop
+      startRenderLoop();
+    }
+    
+    // Handle window resize
+    function handleResize() {
+      initCanvas();
+      render();
+    }
+    
+    // Canvas polyfills
+    function setupCanvasPolyfills() {
+      if (!CanvasRenderingContext2D.prototype.roundRect) {
+        CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radii) {
+          const radius = typeof radii === 'number' ? radii : radii[0] || 0;
+          this.beginPath();
+          this.moveTo(x + radius, y);
+          this.lineTo(x + width - radius, y);
+          this.quadraticCurveTo(x + width, y, x + width, y + radius);
+          this.lineTo(x + width, y + height - radius);
+          this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+          this.lineTo(x + radius, y + height);
+          this.quadraticCurveTo(x, y + height, x, y + height - radius);
+          this.lineTo(x, y + radius);
+          this.quadraticCurveTo(x, y, x + radius, y);
+          this.closePath();
+        };
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('load', () => {
+      setupCanvasPolyfills();
+      initCanvas();
+    });
+
+    // Canvas Event Handling
+    function setupCanvasEvents() {
+      canvas.addEventListener('mousedown', handleMouseDown);
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('mouseup', handleMouseUp);
+      canvas.addEventListener('mouseleave', handleMouseLeave);
+      canvas.addEventListener('dblclick', handleDoubleClick);
+    }
+    
+    function getMousePosition(e) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+    
+    function hitTest(pos) {
+      for (let i = entities.length - 1; i >= 0; i--) {
+        const entity = entities[i];
+        if (pos.x >= entity.x && pos.x <= entity.x + entity.width &&
+            pos.y >= entity.y && pos.y <= entity.y + entity.height) {
+          return entity;
+        }
+      }
+      return null;
+    }
+    
+    function handleMouseDown(e) {
+      mousePos = getMousePosition(e);
+      const hitEntity = hitTest(mousePos);
+      
+      if (hitEntity) {
+        isDragging = true;
+        dragTarget = hitEntity;
+        dragOffset = {
+          x: mousePos.x - hitEntity.x,
+          y: mousePos.y - hitEntity.y
+        };
+        canvas.style.cursor = 'grabbing';
+      }
+    }
+    
+    function handleMouseMove(e) {
+      mousePos = getMousePosition(e);
+      
+      if (isDragging && dragTarget) {
+        dragTarget.x = mousePos.x - dragOffset.x;
+        dragTarget.y = mousePos.y - dragOffset.y;
+        
+        // Keep entities within bounds
+        dragTarget.x = Math.max(0, Math.min(canvasWidth - dragTarget.width, dragTarget.x));
+        dragTarget.y = Math.max(0, Math.min(canvasHeight - dragTarget.height, dragTarget.y));
+        
+        requestRender();
+      } else {
+        // Handle hover effects
+        const hitEntity = hitTest(mousePos);
+        if (hitEntity !== hoveredEntity) {
+          hoveredEntity = hitEntity;
+          canvas.style.cursor = hitEntity ? 'grab' : 'default';
+          requestRender();
+        }
+      }
+    }
+    
+    function handleMouseUp(e) {
+      if (isDragging) {
+        isDragging = false;
+        dragTarget = null;
+        canvas.style.cursor = hoveredEntity ? 'grab' : 'default';
+      }
+    }
+    
+    function handleMouseLeave(e) {
+      if (isDragging) {
+        handleMouseUp(e);
+      }
+      hoveredEntity = null;
+      canvas.style.cursor = 'default';
+      requestRender();
+    }
+    
+    function handleDoubleClick(e) {
+      mousePos = getMousePosition(e);
+      const hitEntity = hitTest(mousePos);
+      if (!hitEntity) {
+        // Create entity at double-click position
+        createEntityAt(mousePos.x - 60, mousePos.y - 40);
+      }
+    }
+    
+    // Render loop management
+    let renderRequested = false;
+    
+    function requestRender() {
+      if (!renderRequested) {
+        renderRequested = true;
+        requestAnimationFrame(() => {
+          render();
+          renderRequested = false;
+        });
+      }
+    }
+    
+    function startRenderLoop() {
+      render();
+    }
+
+    // Intelligent Color System
+    const ColorPalette = {
+      primary: [
+        '#667eea', '#764ba2', '#f093fb', '#f5576c',
+        '#4facfe', '#00f2fe', '#43e97b', '#38f9d7',
+        '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3'
+      ],
+      
+      generateHash(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash);
+      },
+      
+      generateSemanticColor(entityName, attributes) {
+        // Semantic color generation based on entity characteristics
+        const hash = this.generateHash(entityName + attributes.join(''));
+        return this.primary[hash % this.primary.length];
+      },
+      
+      lighten(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16);
+        const amt = Math.round(2.55 * percent);
+        const R = (num >> 16) + amt;
+        const G = (num >> 8 & 0x00FF) + amt;
+        const B = (num & 0x0000FF) + amt;
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+          (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+          (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+      }
+    };
+
+    // Canvas Drawing Functions
+    function render() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      
+      // Draw grid (subtle)
+      drawGrid();
+      
+      // Draw relationships first (behind entities)
+      drawRelationships();
+      
+      // Draw entities
+      drawEntities();
+    }
+    
+    function drawGrid() {
+      const gridSize = 20;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([]);
+      
+      ctx.beginPath();
+      for (let x = 0; x <= canvasWidth; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvasHeight);
+      }
+      for (let y = 0; y <= canvasHeight; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvasWidth, y);
+      }
+      ctx.stroke();
+    }
+    
+    function drawEntities() {
+      entities.forEach(entity => {
+        drawEntity(entity);
+      });
+    }
+    
+    function drawEntity(entity) {
+      const isHovered = entity === hoveredEntity;
+      const isDragged = entity === dragTarget;
+      
+      // Create gradient
+      const gradient = ctx.createLinearGradient(
+        entity.x, entity.y, 
+        entity.x + entity.width, entity.y + entity.height
+      );
+      gradient.addColorStop(0, entity.color);
+      gradient.addColorStop(1, ColorPalette.lighten(entity.color, 15));
+      
+      // Entity shadow
+      if (isHovered || isDragged) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        ctx.shadowBlur = isDragged ? 20 : 15;
+        ctx.shadowOffsetX = isDragged ? 0 : 2;
+        ctx.shadowOffsetY = isDragged ? 0 : 4;
+      }
+      
+      // Entity background
+      ctx.fillStyle = gradient;
+      ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
+      
+      if (isHovered || isDragged) {
+        ctx.restore();
+      }
+      
+      // Entity border
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.setLineDash([]);
+      ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
+      
+      // Entity name
+      ctx.fillStyle = '#1d1d1f';
+      ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fontWeight = '500';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      const centerX = entity.x + entity.width / 2;
+      const centerY = entity.y + entity.height / 2;
+      
+      // Text background for better readability
+      const textWidth = ctx.measureText(entity.name).width;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillRect(
+        centerX - textWidth/2 - 4, 
+        centerY - 8, 
+        textWidth + 8, 
+        16
+      );
+      
+      // Draw text
+      ctx.fillStyle = '#1d1d1f';
+      ctx.fillText(entity.name, centerX, centerY);
+      
+      // Draw attributes if space allows
+      if (entity.height > 60 && entity.attributes.length > 0) {
+        ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(29, 29, 31, 0.7)';
+        
+        const maxLines = Math.floor((entity.height - 40) / 14);
+        const displayAttributes = entity.attributes.slice(0, maxLines);
+        
+        displayAttributes.forEach((attr, index) => {
+          const attrText = attr.length > 15 ? attr.substring(0, 12) + '...' : attr;
+          ctx.fillText(
+            attrText, 
+            entity.x + 8, 
+            entity.y + 30 + (index * 14)
+          );
+        });
+        
+        if (entity.attributes.length > maxLines) {
+          ctx.fillText(
+            `+${entity.attributes.length - maxLines} more...`, 
+            entity.x + 8, 
+            entity.y + 30 + (maxLines * 14)
+          );
+        }
+      }
+    }
+    
+    function drawRelationships() {
+      relationships.forEach(rel => {
+        drawRelationship(rel);
+      });
+    }
+    
+    function drawRelationship(rel) {
+      const fromEntity = entities.find(e => e.name === rel.source);
+      const toEntity = entities.find(e => e.name === rel.target);
+      
+      if (!fromEntity || !toEntity) return;
+      
+      // Calculate connection points
+      const fromCenter = {
+        x: fromEntity.x + fromEntity.width / 2,
+        y: fromEntity.y + fromEntity.height / 2
+      };
+      const toCenter = {
+        x: toEntity.x + toEntity.width / 2,
+        y: toEntity.y + toEntity.height / 2
+      };
+      
+      // Calculate edge intersection points
+      const startPoint = calculateEdgeIntersection(fromCenter, toCenter, {
+        left: fromEntity.x,
+        right: fromEntity.x + fromEntity.width,
+        top: fromEntity.y,
+        bottom: fromEntity.y + fromEntity.height
+      });
+      
+      const endPoint = calculateEdgeIntersection(toCenter, fromCenter, {
+        left: toEntity.x,
+        right: toEntity.x + toEntity.width,
+        top: toEntity.y,
+        bottom: toEntity.y + toEntity.height
+      });
+      
+      // Draw relationship line with gradient
+      const gradient = ctx.createLinearGradient(
+        startPoint.x, startPoint.y, 
+        endPoint.x, endPoint.y
+      );
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      ctx.moveTo(startPoint.x, startPoint.y);
+      ctx.lineTo(endPoint.x, endPoint.y);
+      ctx.stroke();
+      
+      // Draw arrow
+      drawArrow(endPoint, startPoint);
+      
+      // Draw label
+      drawRelationshipLabel(rel.label, startPoint, endPoint);
+    }
+    
+    function drawArrow(to, from) {
+      const angle = Math.atan2(to.y - from.y, to.x - from.x);
+      const arrowLength = 12;
+      const arrowAngle = Math.PI / 6;
+      
+      ctx.save();
+      ctx.fillStyle = '#764ba2';
+      ctx.beginPath();
+      ctx.moveTo(to.x, to.y);
+      ctx.lineTo(
+        to.x - arrowLength * Math.cos(angle - arrowAngle),
+        to.y - arrowLength * Math.sin(angle - arrowAngle)
+      );
+      ctx.lineTo(
+        to.x - arrowLength * Math.cos(angle + arrowAngle),
+        to.y - arrowLength * Math.sin(angle + arrowAngle)
+      );
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+    
+    function drawRelationshipLabel(label, startPoint, endPoint) {
+      const labelX = (startPoint.x + endPoint.x) / 2;
+      const labelY = (startPoint.y + endPoint.y) / 2;
+      
+      // Measure text
+      ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.fontWeight = '500';
+      const textMetrics = ctx.measureText(label);
+      const textWidth = textMetrics.width;
+      const textHeight = 16;
+      
+      // Draw label background
+      const padding = 8;
+      const bgX = labelX - textWidth/2 - padding;
+      const bgY = labelY - textHeight/2 - padding/2;
+      const bgWidth = textWidth + padding * 2;
+      const bgHeight = textHeight + padding;
+      
+      // Background with rounded corners
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.beginPath();
+      ctx.roundRect(bgX, bgY, bgWidth, bgHeight, 6);
+      ctx.fill();
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Draw text
+      ctx.fillStyle = '#1d1d1f';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, labelX, labelY);
+    }
 
     function getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+      return ColorPalette.primary[Math.floor(Math.random() * ColorPalette.primary.length)];
+    }
+
+    function getSemanticColor(name, attributes) {
+      return ColorPalette.generateSemanticColor(name, attributes);
     }
 
     function updateEntitySelectOptions() {
@@ -150,28 +729,26 @@
         nameInput.value = entity.name;
         nameInput.onchange = () => {
           entity.name = nameInput.value;
-          entity.el.textContent = entity.name;
           updateEntitySelectOptions();
-          updateLines();
+          requestRender();
         };
         wrapper.appendChild(nameInput);
 
         const textarea = document.createElement('textarea');
         textarea.value = entity.attributes.join('\n');
         textarea.onchange = () => {
-          entity.attributes = textarea.value.trim().split('\n');
-          entity.el.dataset.attributes = JSON.stringify(entity.attributes);
+          entity.attributes = textarea.value.trim().split('\n').filter(attr => attr.trim());
+          requestRender();
         };
         wrapper.appendChild(textarea);
 
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.onclick = () => {
-          canvas.removeChild(entity.el);
           entities.splice(idx, 1);
           updateEntityList();
           updateEntitySelectOptions();
-          updateLines();
+          requestRender();
         };
         wrapper.appendChild(deleteBtn);
 
@@ -191,7 +768,7 @@
         deleteBtn.onclick = () => {
           relationships.splice(idx, 1);
           updateRelationshipList();
-          updateLines();
+          requestRender();
         };
         wrapper.appendChild(deleteBtn);
 
@@ -199,104 +776,267 @@
       });
     }
 
-    function makeDraggable(el) {
-      let isDragging = false;
-      let offsetX = 0, offsetY = 0;
-
-      el.addEventListener('mousedown', (e) => {
-        if (e.target !== el) return;
-        isDragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-        document.body.style.userSelect = 'none';
-      });
-
-      document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          el.style.left = `${e.pageX - canvas.offsetLeft - offsetX}px`;
-          el.style.top = `${e.pageY - canvas.offsetTop - offsetY}px`;
-          updateLines();
-        }
-      });
-
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-        document.body.style.userSelect = '';
-      });
+    // Canvas-based entity creation
+    function createEntityAt(x, y, name = 'New Entity', attributes = []) {
+      const color = getSemanticColor(name, attributes);
+      
+      const entity = {
+        name: name,
+        attributes: attributes,
+        color: color,
+        x: Math.max(0, Math.min(canvasWidth - 120, x)),
+        y: Math.max(0, Math.min(canvasHeight - 80, y)),
+        width: 120,
+        height: 80
+      };
+      
+      entities.push(entity);
+      updateEntitySelectOptions();
+      updateEntityList();
+      requestRender();
+      
+      return entity;
     }
 
     function addCustomEntity() {
       const name = document.getElementById('entity-name').value.trim();
-      const attributes = document.getElementById('entity-attributes').value.trim().split('\n');
-      if (!name) return;
+      const attributesText = document.getElementById('entity-attributes').value.trim();
+      const attributes = attributesText ? attributesText.split('\n').filter(attr => attr.trim()) : [];
+      
+      if (!name) {
+        // Show validation feedback
+        const nameInput = document.getElementById('entity-name');
+        nameInput.style.borderColor = 'rgba(255, 59, 48, 0.5)';
+        nameInput.style.boxShadow = '0 0 0 3px rgba(255, 59, 48, 0.1)';
+        setTimeout(() => {
+          nameInput.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          nameInput.style.boxShadow = 'none';
+        }, 1000);
+        return;
+      }
 
-      const color = getRandomColor();
-      const div = document.createElement('div');
-      div.classList.add('entity');
-      div.textContent = name;
-      div.style.backgroundColor = color;
-      div.style.left = '50px';
-      div.style.top = '50px';
-      div.style.width = '100px';
-      div.style.height = '60px';
-      div.dataset.name = name;
-      div.dataset.color = color;
-      div.dataset.attributes = JSON.stringify(attributes);
-
-      makeDraggable(div);
-      canvas.appendChild(div);
-
-      entities.push({ el: div, name, attributes, color });
-      updateEntitySelectOptions();
-      updateEntityList();
-      updateLines();
+      // Create entity at random position
+      const x = Math.max(50, Math.random() * (canvasWidth - 170));
+      const y = Math.max(50, Math.random() * (canvasHeight - 130));
+      
+      createEntityAt(x, y, name, attributes);
+      
+      // Clear inputs
+      document.getElementById('entity-name').value = '';
+      document.getElementById('entity-attributes').value = '';
+      
+      // Show success feedback
+      showConnectionFeedback(`Created entity: ${name}`);
     }
 
     function createRelationship() {
       const source = sourceSelect.value;
       const target = targetSelect.value;
       const label = document.getElementById('relation-label').value.trim();
-      if (!source || !target || !label || source === target) return;
+      if (!source || !target || !label || source === target) {
+        // Show validation feedback
+        const relationLabel = document.getElementById('relation-label');
+        relationLabel.style.borderColor = 'rgba(255, 59, 48, 0.5)';
+        relationLabel.style.boxShadow = '0 0 0 3px rgba(255, 59, 48, 0.1)';
+        setTimeout(() => {
+          relationLabel.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          relationLabel.style.boxShadow = 'none';
+        }, 1000);
+        return;
+      }
+      
       relationships.push({ source, target, label });
       updateRelationshipList();
-      updateLines();
+      requestRender();
+      
+      // Clear the relationship label input
+      document.getElementById('relation-label').value = '';
+      
+      // Show success feedback
+      showConnectionFeedback(`Connected ${source} → ${target}`);
     }
 
-    function updateLines() {
-      svg.innerHTML = `
-        <defs>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-            <polygon points="0 0, 10 5, 0 10" fill="#555" />
-          </marker>
-        </defs>
+    function showConnectionFeedback(message) {
+      const feedback = document.createElement('div');
+      feedback.textContent = message;
+      feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(52, 199, 89, 0.9);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 12px;
+        z-index: 1000;
+        font-weight: 500;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(52, 199, 89, 0.3);
+        transition: all 0.3s ease;
       `;
+      
+      document.body.appendChild(feedback);
+      
+      // Auto-remove after 2 seconds
+      setTimeout(() => {
+        feedback.style.opacity = '0';
+        feedback.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => {
+          document.body.removeChild(feedback);
+        }, 300);
+      }, 2000);
+    }
 
-      relationships.forEach(rel => {
-        const from = entities.find(e => e.name === rel.source)?.el;
-        const to = entities.find(e => e.name === rel.target)?.el;
-        if (!from || !to) return;
+    // Edge intersection calculation (reused from Canvas drawing)
+    function calculateEdgeIntersection(center, targetCenter, bounds) {
+      const dx = targetCenter.x - center.x;
+      const dy = targetCenter.y - center.y;
+      
+      // Handle zero division cases
+      if (dx === 0 && dy === 0) {
+        return center; // Entities are overlapping
+      }
+      
+      if (dx === 0) {
+        // Vertical line
+        return {
+          x: center.x,
+          y: dy > 0 ? bounds.bottom : bounds.top
+        };
+      }
+      
+      if (dy === 0) {
+        // Horizontal line
+        return {
+          x: dx > 0 ? bounds.right : bounds.left,
+          y: center.y
+        };
+      }
+      
+      // Calculate intersection with rectangle edges
+      const slope = dy / dx;
+      
+      let intersectionX, intersectionY;
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
+        // Intersect with left or right edge
+        if (dx > 0) {
+          intersectionX = bounds.right;
+          intersectionY = center.y + slope * (bounds.right - center.x);
+        } else {
+          intersectionX = bounds.left;
+          intersectionY = center.y + slope * (bounds.left - center.x);
+        }
+      } else {
+        // Intersect with top or bottom edge
+        if (dy > 0) {
+          intersectionY = bounds.bottom;
+          intersectionX = center.x + (bounds.bottom - center.y) / slope;
+        } else {
+          intersectionY = bounds.top;
+          intersectionX = center.x + (bounds.top - center.y) / slope;
+        }
+      }
+      
+      return { x: intersectionX, y: intersectionY };
+    }
 
-        const x1 = from.offsetLeft + from.offsetWidth / 2;
-        const y1 = from.offsetTop + from.offsetHeight / 2;
-        const x2 = to.offsetLeft + to.offsetWidth / 2;
-        const y2 = to.offsetTop + to.offsetHeight / 2;
+    // Export System Implementation
+    function exportSceneGraph() {
+      const sceneData = {
+        entities: entities.map(entity => ({
+          name: entity.name,
+          attributes: entity.attributes,
+          position: {
+            x: entity.x,
+            y: entity.y
+          },
+          size: {
+            width: entity.width,
+            height: entity.height
+          },
+          color: entity.color
+        })),
+        relationships: relationships.map(rel => ({
+          source: rel.source,
+          target: rel.target,
+          label: rel.label
+        })),
+        metadata: {
+          version: "2.0-canvas",
+          created: new Date().toISOString(),
+          entityCount: entities.length,
+          relationshipCount: relationships.length,
+          canvasSize: {
+            width: canvasWidth,
+            height: canvasHeight
+          }
+        }
+      };
+      
+      const output = JSON.stringify(sceneData, null, 2);
+      document.getElementById('scene-output').textContent = output;
+    }
 
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x1);
-        line.setAttribute('y1', y1);
-        line.setAttribute('x2', x2);
-        line.setAttribute('y2', y2);
-        line.setAttribute('stroke', '#555');
-        line.setAttribute('stroke-width', '2');
-        line.setAttribute('marker-end', 'url(#arrow)');
-        svg.appendChild(line);
+    function copySceneGraph() {
+      exportSceneGraph(); // Generate current scene data
+      const output = document.getElementById('scene-output').textContent;
+      
+      if (navigator.clipboard && window.isSecureContext) {
+        // Modern Clipboard API
+        navigator.clipboard.writeText(output).then(() => {
+          showCopyFeedback("Scene graph copied to clipboard!");
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+          fallbackCopyToClipboard(output);
+        });
+      } else {
+        // Fallback for older browsers
+        fallbackCopyToClipboard(output);
+      }
+    }
 
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', (x1 + x2) / 2);
-        text.setAttribute('y', (y1 + y2) / 2 - 5);
-        text.textContent = rel.label;
-        svg.appendChild(text);
-      });
+    function fallbackCopyToClipboard(text) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showCopyFeedback("Scene graph copied to clipboard!");
+      } catch (err) {
+        console.error('Fallback copy failed: ', err);
+        showCopyFeedback("Copy failed. Please manually select and copy the text.");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopyFeedback(message) {
+      // Create temporary feedback element
+      const feedback = document.createElement('div');
+      feedback.textContent = message;
+      feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        transition: opacity 0.3s;
+      `;
+      
+      document.body.appendChild(feedback);
+      
+      // Auto-remove after 3 seconds
+      setTimeout(() => {
+        feedback.style.opacity = '0';
+        setTimeout(() => {
+          document.body.removeChild(feedback);
+        }, 300);
+      }, 3000);
     }
   </script>
 </body>
