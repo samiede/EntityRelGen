@@ -1,96 +1,166 @@
-# Visualization System Specification - Revolutionary Design
+# Visualization System Specification - Canvas-Based Rendering
 
 ## Design Philosophy
 
-### "Thought Made Visible"
-The Entity Relationship Builder transcends traditional diagramming tools by creating a spatial thinking environment where ideas flow naturally from mind to canvas. Inspired by the intersection of technology and liberal arts, the interface becomes invisible, allowing pure focus on conceptual relationships.
+### "Thought Made Visible" through Canvas
+The Entity Relationship Builder leverages HTML5 Canvas for unprecedented performance and visual fidelity. Every pixel is mathematically precise, every interaction renders at 60fps, creating a seamless environment where complex diagrams feel effortless and responsive.
 
 ### Core Design Principles
-- **Spatial Intelligence**: Leverage human spatial reasoning for intuitive interaction
-- **Contextual Awareness**: Interface adapts to user intent and content
-- **Effortless Precision**: Complex operations feel simple and natural
-- **Beautiful Functionality**: Every pixel serves both purpose and delight
-- **Temporal Harmony**: Smooth animations create continuity of thought
+- **Mathematical Precision**: Pixel-perfect positioning with geometric algorithms
+- **Performance Excellence**: 60fps rendering with hardware acceleration
+- **Visual Elegance**: Beautiful gradients, shadows, and animations
+- **Responsive Interactions**: Instant visual feedback on all operations
+- **Scalable Architecture**: Hundreds of entities without performance loss
 
-## Canvas Architecture - The Infinite Thinking Space
+## Canvas Architecture - High-Performance Rendering
 
-### Spatial Environment
-```css
-.canvas-environment {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-```
-
-### Dynamic Grid System
-```css
-.thinking-grid {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-image: 
-    radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.1) 1px, transparent 0);
-  background-size: 20px 20px;
-}
-
-.canvas-environment:hover .thinking-grid {
-  opacity: 0.3;
-}
-```
-
-### Ambient Canvas Properties
-- **Dimensions**: Fluid, adapts to viewport with minimum 1200×800px
-- **Background**: Glassmorphic surface with subtle depth
-- **Grid**: Contextual dot grid appears on hover for precise alignment
-- **Lighting**: Subtle ambient lighting effects based on content density
-- **Breathing**: Gentle pulsing animation during idle states
-
-## Entity Visualization - Living Ideas
-
-### Entity Design Language
-```css
-.entity {
-  background: linear-gradient(145deg, 
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.6) 100%);
-  backdrop-filter: blur(15px) saturate(120%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+### Canvas Environment Setup
+```javascript
+function initCanvas() {
+  const rect = canvasContainer.getBoundingClientRect();
+  canvasWidth = rect.width;
+  canvasHeight = rect.height;
   
-  /* Hover elevation */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateZ(0);
-  will-change: transform, box-shadow;
+  // High-DPI support for crisp visuals
+  canvas.width = canvasWidth * devicePixelRatio;
+  canvas.height = canvasHeight * devicePixelRatio;
+  canvas.style.width = canvasWidth + 'px';
+  canvas.style.height = canvasHeight + 'px';
+  
+  // Scale context for high-DPI displays
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+```
+
+### Render Loop Management
+```javascript
+// Optimized render loop
+let renderRequested = false;
+
+function requestRender() {
+  if (!renderRequested) {
+    renderRequested = true;
+    requestAnimationFrame(() => {
+      render();
+      renderRequested = false;
+    });
+  }
 }
 
-.entity:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 
-    0 16px 48px rgba(0, 0, 0, 0.12),
-    0 8px 16px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+function render() {
+  // Clear canvas
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  
+  // Draw layers in order
+  drawGrid();
+  drawRelationships();  // Behind entities
+  drawEntities();       // On top
 }
+```
 
-.entity.selected {
-  border: 2px solid rgba(0, 122, 255, 0.8);
-  box-shadow: 
-    0 0 0 4px rgba(0, 122, 255, 0.1),
-    0 16px 48px rgba(0, 0, 0, 0.12);
+### Canvas State Management
+```javascript
+// Canvas state
+let canvasWidth = 0;
+let canvasHeight = 0;
+let devicePixelRatio = window.devicePixelRatio || 1;
+
+// Interaction state
+let isDragging = false;
+let dragTarget = null;
+let dragOffset = { x: 0, y: 0 };
+let mousePos = { x: 0, y: 0 };
+let hoveredEntity = null;
+```
+
+## Entity Visualization - Mathematical Beauty
+
+### Canvas Entity Data Model
+```javascript
+const entity = {
+  name: String,           // Display name
+  attributes: Array,      // Entity attributes
+  color: String,         // Base color
+  x: Number,             // Canvas X position
+  y: Number,             // Canvas Y position  
+  width: Number,         // Entity width
+  height: Number         // Entity height
+};
+```
+
+### Entity Rendering Algorithm
+```javascript
+function drawEntity(entity) {
+  const isHovered = entity === hoveredEntity;
+  const isDragged = entity === dragTarget;
+  
+  // Create gradient for depth
+  const gradient = ctx.createLinearGradient(
+    entity.x, entity.y, 
+    entity.x + entity.width, entity.y + entity.height
+  );
+  gradient.addColorStop(0, entity.color);
+  gradient.addColorStop(1, ColorPalette.lighten(entity.color, 15));
+  
+  // Dynamic shadows for interaction feedback
+  if (isHovered || isDragged) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = isDragged ? 20 : 15;
+    ctx.shadowOffsetX = isDragged ? 0 : 2;
+    ctx.shadowOffsetY = isDragged ? 0 : 4;
+  }
+  
+  // Draw entity background
+  ctx.fillStyle = gradient;
+  ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
+  
+  if (isHovered || isDragged) {
+    ctx.restore();
+  }
+  
+  // Draw border with hover effects
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = isHovered ? 2 : 1;
+  ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
+  
+  // Render text with background
+  drawEntityText(entity);
+  
+  // Draw attributes if space allows
+  if (entity.height > 60 && entity.attributes.length > 0) {
+    drawEntityAttributes(entity);
+  }
+}
+```
+
+### Advanced Text Rendering
+```javascript
+function drawEntityText(entity) {
+  const centerX = entity.x + entity.width / 2;
+  const centerY = entity.y + entity.height / 2;
+  
+  // Set text properties
+  ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fontWeight = '500';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Measure text for background
+  const textWidth = ctx.measureText(entity.name).width;
+  
+  // Draw text background for readability
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillRect(
+    centerX - textWidth/2 - 4, 
+    centerY - 8, 
+    textWidth + 8, 
+    16
+  );
+  
+  // Draw text
+  ctx.fillStyle = '#1d1d1f';
+  ctx.fillText(entity.name, centerX, centerY);
 }
 ```
 
@@ -104,465 +174,298 @@ const ColorPalette = {
   ],
   
   generateSemanticColor(entityName, attributes) {
-    // Semantic color generation based on entity characteristics
     const hash = this.generateHash(entityName + attributes.join(''));
-    const colorFamily = this.determineColorFamily(attributes);
     return this.primary[hash % this.primary.length];
   },
   
-  generateComplementaryPalette(baseColor) {
-    // Generate harmonious color variations
-    return {
-      primary: baseColor,
-      light: this.lighten(baseColor, 0.3),
-      dark: this.darken(baseColor, 0.2),
-      accent: this.rotate(baseColor, 30)
-    };
+  lighten(color, percent) {
+    // Mathematical color manipulation
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + 
+      (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+      (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+      (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
   }
 };
 ```
 
-### Micro-Interactions
-- **Entity Birth**: Gentle scale-up animation with elastic timing
-- **Hover Response**: Subtle lift with depth shadows
-- **Selection**: Pulsing glow with smooth border animation
-- **Resize**: Real-time content reflow with spring physics
-- **Content Updates**: Typewriter effect for text changes
+## Relationship Visualization - Mathematical Precision
 
-## Relationship Visualization - Connections with Soul
-
-### Connection Aesthetics
-```css
-.relationship-path {
-  stroke: url(#gradient-connection);
-  stroke-width: 3;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.relationship-path:hover {
-  stroke-width: 4;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-}
-```
-
-### Dynamic Gradient Definitions
-```svg
-<defs>
-  <linearGradient id="gradient-connection" x1="0%" y1="0%" x2="100%" y2="0%">
-    <stop offset="0%" style="stop-color:#667eea;stop-opacity:0.8">
-      <animate attributeName="stop-color" 
-        values="#667eea;#764ba2;#667eea" 
-        dur="3s" repeatCount="indefinite"/>
-    </stop>
-    <stop offset="100%" style="stop-color:#764ba2;stop-opacity:0.8">
-      <animate attributeName="stop-color" 
-        values="#764ba2;#667eea;#764ba2" 
-        dur="3s" repeatCount="indefinite"/>
-    </stop>
-  </linearGradient>
-  
-  <marker id="arrow-modern" viewBox="0 0 12 12" refX="10" refY="6" 
-          markerWidth="8" markerHeight="8" orient="auto">
-    <path d="M2,2 L2,10 L10,6 z" fill="url(#gradient-connection)"/>
-  </marker>
-</defs>
-```
-
-### Intelligent Connection Algorithm
+### Edge-to-Edge Connection Algorithm
 ```javascript
-class SmartConnectionSystem {
-  calculateOptimalPath(fromEntity, toEntity) {
-    const fromBounds = this.getEntityBounds(fromEntity);
-    const toBounds = this.getEntityBounds(toEntity);
-    
-    // Multi-point analysis for best connection
-    const connectionPoints = this.analyzeConnectionPoints(fromBounds, toBounds);
-    const optimalPoints = this.selectOptimalPoints(connectionPoints);
-    
-    // Generate smooth curve with control points
-    return this.generateSmoothedPath(optimalPoints);
-  }
+function calculateEdgeIntersection(center, targetCenter, bounds) {
+  const dx = targetCenter.x - center.x;
+  const dy = targetCenter.y - center.y;
   
-  generateSmoothedPath(startPoint, endPoint) {
-    const distance = this.calculateDistance(startPoint, endPoint);
-    const curvature = Math.min(distance * 0.3, 50);
-    
-    // Create Bézier curve for organic feel
-    const controlPoint1 = this.calculateControlPoint(startPoint, endPoint, curvature);
-    const controlPoint2 = this.calculateControlPoint(endPoint, startPoint, curvature);
-    
-    return `M ${startPoint.x},${startPoint.y} 
-            C ${controlPoint1.x},${controlPoint1.y} 
-              ${controlPoint2.x},${controlPoint2.y} 
-              ${endPoint.x},${endPoint.y}`;
-  }
-}
-```
-
-### Label Intelligence
-```css
-.relationship-label {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 6px 12px;
-  font-weight: 500;
-  font-size: 13px;
-  color: #1d1d1f;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+  // Handle edge cases
+  if (dx === 0 && dy === 0) return center;
   
-  transform: translateY(-50%);
-  white-space: nowrap;
-  pointer-events: none;
-  
-  /* Smooth appearance */
-  opacity: 0;
-  animation: labelFadeIn 0.3s ease-out 0.2s forwards;
-}
-
-@keyframes labelFadeIn {
-  from { opacity: 0; transform: translateY(-50%) scale(0.8); }
-  to { opacity: 1; transform: translateY(-50%) scale(1); }
-}
-```
-
-## Interactive Experience - Intuitive by Nature
-
-### Gesture Recognition System
-```javascript
-class GestureController {
-  initializeGestures() {
-    this.hammer = new Hammer(this.canvas);
-    
-    // Multi-touch support
-    this.hammer.get('pinch').set({ enable: true });
-    this.hammer.get('rotate').set({ enable: true });
-    
-    // Gesture mappings
-    this.setupPanGestures();
-    this.setupZoomGestures();
-    this.setupRotationGestures();
-    this.setupTapGestures();
-  }
-  
-  setupSmartDrag() {
-    // Predictive dragging with momentum
-    this.velocityTracker = new VelocityTracker();
-    this.dragWithPhysics = new PhysicsEngine({
-      friction: 0.92,
-      elasticity: 0.1,
-      boundaries: this.canvas.bounds
-    });
-  }
-}
-```
-
-### Physics-Based Interactions
-```javascript
-class EntityPhysics {
-  constructor() {
-    this.entities = new Map();
-    this.animationFrame = null;
-    this.gravity = { x: 0, y: 0 };
-  }
-  
-  addEntity(entity) {
-    this.entities.set(entity.id, {
-      element: entity,
-      velocity: { x: 0, y: 0 },
-      acceleration: { x: 0, y: 0 },
-      mass: this.calculateMass(entity),
-      elasticity: 0.3,
-      friction: 0.95
-    });
-  }
-  
-  animate() {
-    this.entities.forEach(entity => {
-      this.updatePhysics(entity);
-      this.applyConstraints(entity);
-      this.updatePosition(entity);
-    });
-    
-    this.animationFrame = requestAnimationFrame(() => this.animate());
-  }
-}
-```
-
-### Contextual Interface Elements
-```css
-.context-menu {
-  background: rgba(28, 28, 30, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.3),
-    0 8px 16px rgba(0, 0, 0, 0.2);
-  
-  padding: 8px 0;
-  min-width: 200px;
-  
-  /* Smooth appearance */
-  transform: scale(0.8) translateY(-10px);
-  opacity: 0;
-  animation: contextMenuAppear 0.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes contextMenuAppear {
-  to {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-.context-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  color: rgba(255, 255, 255, 0.9);
-  transition: background-color 0.15s ease;
-}
-
-.context-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-```
-
-## Adaptive Intelligence Features
-
-### Content-Aware Layout
-```javascript
-class IntelligentLayout {
-  autoArrange(entities, relationships) {
-    const graph = this.buildGraph(entities, relationships);
-    const layout = this.calculateOptimalLayout(graph);
-    
-    return this.animateToLayout(layout, {
-      duration: 1200,
-      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-      stagger: 50
-    });
-  }
-  
-  detectClusters(entities, relationships) {
-    const clusters = this.performClusterAnalysis(relationships);
-    return clusters.map(cluster => ({
-      entities: cluster,
-      suggestedColor: this.generateClusterColor(),
-      recommendedPosition: this.calculateClusterCenter(cluster)
-    }));
-  }
-}
-```
-
-### Semantic Color Intelligence
-```javascript
-class SemanticColorSystem {
-  analyzeEntity(name, attributes) {
-    const keywords = this.extractKeywords(name, attributes);
-    const category = this.categorizeEntity(keywords);
-    
+  if (dx === 0) {
+    // Vertical line
     return {
-      primary: this.getSemanticColor(category),
-      accent: this.getAccentColor(category),
-      relationships: this.getRelationshipColors(category)
+      x: center.x,
+      y: dy > 0 ? bounds.bottom : bounds.top
     };
   }
   
-  generateHarmoniousPalette(entities) {
-    const baseColors = entities.map(e => e.color);
-    return this.createHarmoniousScheme(baseColors);
-  }
-}
-```
-
-## Ambient Experience Design
-
-### Contextual Animations
-```css
-@keyframes entityPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-.entity.thinking {
-  animation: entityPulse 3s ease-in-out infinite;
-}
-
-.entity.connecting {
-  position: relative;
-}
-
-.entity.connecting::after {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border: 2px solid rgba(0, 122, 255, 0.3);
-  border-radius: 20px;
-  animation: connectionRipple 1s ease-out infinite;
-}
-
-@keyframes connectionRipple {
-  to {
-    transform: scale(1.1);
-    opacity: 0;
-  }
-}
-```
-
-### Intelligent Feedback System
-```javascript
-class FeedbackOrchestrator {
-  provideContextualFeedback(action, context) {
-    const feedback = {
-      visual: this.generateVisualFeedback(action),
-      haptic: this.generateHapticFeedback(action),
-      audio: this.generateAudioFeedback(action, context)
-    };
-    
-    return this.orchestrateFeedback(feedback);
-  }
-  
-  adaptToUserBehavior(userPatterns) {
-    // Machine learning-inspired adaptation
-    this.adjustAnimationSpeed(userPatterns.preferredSpeed);
-    this.customizeColorPreferences(userPatterns.colorChoices);
-    this.optimizeLayoutSuggestions(userPatterns.layoutHistory);
-  }
-}
-```
-
-## Performance & Accessibility Excellence
-
-### Rendering Optimization
-```javascript
-class RenderingEngine {
-  constructor() {
-    this.renderQueue = new PriorityQueue();
-    this.viewportCulling = new ViewportCuller();
-    this.levelOfDetail = new LODManager();
-  }
-  
-  optimizeRendering() {
-    // Viewport culling for large diagrams
-    const visibleEntities = this.viewportCulling.getVisible();
-    
-    // Level of detail based on zoom
-    const lodLevel = this.levelOfDetail.calculate(this.zoom);
-    
-    // Batch updates for smooth performance
-    this.batchUpdates(visibleEntities, lodLevel);
-  }
-}
-```
-
-### Universal Design Principles
-```css
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .entity {
-    border: 2px solid #000;
-    background: #fff;
-    color: #000;
-  }
-  
-  .relationship-path {
-    stroke: #000;
-    stroke-width: 4;
-  }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Focus management for keyboard navigation */
-.entity:focus {
-  outline: 3px solid #0066cc;
-  outline-offset: 2px;
-}
-```
-
-## Revolutionary Features
-
-### AI-Assisted Design
-```javascript
-class DesignAssistant {
-  suggestImprovements(currentDiagram) {
-    const analysis = this.analyzeDiagram(currentDiagram);
-    
+  if (dy === 0) {
+    // Horizontal line
     return {
-      layout: this.suggestLayoutOptimizations(analysis),
-      colors: this.suggestColorHarmonies(analysis),
-      relationships: this.suggestMissingConnections(analysis),
-      simplification: this.suggestSimplifications(analysis)
+      x: dx > 0 ? bounds.right : bounds.left,
+      y: center.y
     };
   }
   
-  predictUserIntent(mousePosition, selectedEntities) {
-    const predictions = this.intentionEngine.predict({
-      mousePos: mousePosition,
-      selection: selectedEntities,
-      history: this.actionHistory
-    });
+  // Calculate intersection with rectangle edges
+  const slope = dy / dx;
+  let intersectionX, intersectionY;
+  
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // Intersect with left or right edge
+    if (dx > 0) {
+      intersectionX = bounds.right;
+      intersectionY = center.y + slope * (bounds.right - center.x);
+    } else {
+      intersectionX = bounds.left;
+      intersectionY = center.y + slope * (bounds.left - center.x);
+    }
+  } else {
+    // Intersect with top or bottom edge
+    if (dy > 0) {
+      intersectionY = bounds.bottom;
+      intersectionX = center.x + (bounds.bottom - center.y) / slope;
+    } else {
+      intersectionY = bounds.top;
+      intersectionX = center.x + (bounds.top - center.y) / slope;
+    }
+  }
+  
+  return { x: intersectionX, y: intersectionY };
+}
+```
+
+### Canvas Relationship Rendering
+```javascript
+function drawRelationship(rel) {
+  const fromEntity = entities.find(e => e.name === rel.source);
+  const toEntity = entities.find(e => e.name === rel.target);
+  
+  if (!fromEntity || !toEntity) return;
+  
+  // Calculate centers and boundaries
+  const fromCenter = {
+    x: fromEntity.x + fromEntity.width / 2,
+    y: fromEntity.y + fromEntity.height / 2
+  };
+  const toCenter = {
+    x: toEntity.x + toEntity.width / 2,
+    y: toEntity.y + toEntity.height / 2
+  };
+  
+  // Get precise edge intersection points
+  const startPoint = calculateEdgeIntersection(fromCenter, toCenter, {
+    left: fromEntity.x,
+    right: fromEntity.x + fromEntity.width,
+    top: fromEntity.y,
+    bottom: fromEntity.y + fromEntity.height
+  });
+  
+  const endPoint = calculateEdgeIntersection(toCenter, fromCenter, {
+    left: toEntity.x,
+    right: toEntity.x + toEntity.width,
+    top: toEntity.y,
+    bottom: toEntity.y + toEntity.height
+  });
+  
+  // Draw relationship line with gradient
+  const gradient = ctx.createLinearGradient(
+    startPoint.x, startPoint.y, 
+    endPoint.x, endPoint.y
+  );
+  gradient.addColorStop(0, '#667eea');
+  gradient.addColorStop(1, '#764ba2');
+  
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  
+  ctx.beginPath();
+  ctx.moveTo(startPoint.x, startPoint.y);
+  ctx.lineTo(endPoint.x, endPoint.y);
+  ctx.stroke();
+  
+  // Draw arrow
+  drawArrow(endPoint, startPoint);
+  
+  // Draw label
+  drawRelationshipLabel(rel.label, startPoint, endPoint);
+}
+```
+
+### Mathematical Arrow Rendering
+```javascript
+function drawArrow(to, from) {
+  const angle = Math.atan2(to.y - from.y, to.x - from.x);
+  const arrowLength = 12;
+  const arrowAngle = Math.PI / 6;
+  
+  ctx.save();
+  ctx.fillStyle = '#764ba2';
+  ctx.beginPath();
+  ctx.moveTo(to.x, to.y);
+  ctx.lineTo(
+    to.x - arrowLength * Math.cos(angle - arrowAngle),
+    to.y - arrowLength * Math.sin(angle - arrowAngle)
+  );
+  ctx.lineTo(
+    to.x - arrowLength * Math.cos(angle + arrowAngle),
+    to.y - arrowLength * Math.sin(angle + arrowAngle)
+  );
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+```
+
+## Interaction System - Precise Hit Detection
+
+### Canvas Event Handling
+```javascript
+function setupCanvasEvents() {
+  canvas.addEventListener('mousedown', handleMouseDown);
+  canvas.addEventListener('mousemove', handleMouseMove);
+  canvas.addEventListener('mouseup', handleMouseUp);
+  canvas.addEventListener('mouseleave', handleMouseLeave);
+  canvas.addEventListener('dblclick', handleDoubleClick);
+}
+
+function getMousePosition(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+}
+```
+
+### Efficient Hit Testing
+```javascript
+function hitTest(pos) {
+  // Test entities from top to bottom (reverse order)
+  for (let i = entities.length - 1; i >= 0; i--) {
+    const entity = entities[i];
+    if (pos.x >= entity.x && pos.x <= entity.x + entity.width &&
+        pos.y >= entity.y && pos.y <= entity.y + entity.height) {
+      return entity;
+    }
+  }
+  return null;
+}
+```
+
+### Smooth Drag Operations
+```javascript
+function handleMouseMove(e) {
+  mousePos = getMousePosition(e);
+  
+  if (isDragging && dragTarget) {
+    // Update position with constraints
+    dragTarget.x = mousePos.x - dragOffset.x;
+    dragTarget.y = mousePos.y - dragOffset.y;
     
-    return this.prepareSmartActions(predictions);
+    // Keep within bounds
+    dragTarget.x = Math.max(0, Math.min(canvasWidth - dragTarget.width, dragTarget.x));
+    dragTarget.y = Math.max(0, Math.min(canvasHeight - dragTarget.height, dragTarget.y));
+    
+    // Request render for smooth animation
+    requestRender();
+  } else {
+    // Handle hover effects
+    const hitEntity = hitTest(mousePos);
+    if (hitEntity !== hoveredEntity) {
+      hoveredEntity = hitEntity;
+      canvas.style.cursor = hitEntity ? 'grab' : 'default';
+      requestRender();
+    }
   }
 }
 ```
 
-### Collaborative Presence
-```css
-.collaboration-cursor {
-  position: absolute;
-  pointer-events: none;
-  z-index: 1000;
-  transition: all 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-}
+## Visual Effects - Canvas-Specific Enhancements
 
-.collaboration-cursor::after {
-  content: attr(data-user-name);
-  position: absolute;
-  top: 20px;
-  left: 10px;
-  background: var(--user-color);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  white-space: nowrap;
+### Dynamic Grid System
+```javascript
+function drawGrid() {
+  const gridSize = 20;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.lineWidth = 0.5;
+  
+  ctx.beginPath();
+  for (let x = 0; x <= canvasWidth; x += gridSize) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvasHeight);
+  }
+  for (let y = 0; y <= canvasHeight; y += gridSize) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvasWidth, y);
+  }
+  ctx.stroke();
 }
 ```
 
-## Emotional Design Language
+### Label Rendering with Rounded Backgrounds
+```javascript
+function drawRelationshipLabel(label, startPoint, endPoint) {
+  const labelX = (startPoint.x + endPoint.x) / 2;
+  const labelY = (startPoint.y + endPoint.y) / 2;
+  
+  // Measure text
+  ctx.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  const textWidth = ctx.measureText(label).width;
+  const padding = 8;
+  
+  // Draw rounded background
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+  ctx.beginPath();
+  ctx.roundRect(
+    labelX - textWidth/2 - padding, 
+    labelY - 8, 
+    textWidth + padding * 2, 
+    16, 
+    6
+  );
+  ctx.fill();
+  
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  
+  // Draw text
+  ctx.fillStyle = '#1d1d1f';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, labelX, labelY);
+}
+```
 
-### Personality Through Motion
-- **Entities**: Gentle breathing animation during idle states
-- **Connections**: Subtle energy flow animations
-- **Interface**: Responsive to user mood and working patterns
-- **Feedback**: Delightful micro-celebrations for achievements
-- **Transitions**: Natural, physics-based movement patterns
+## Performance Optimization
 
-### Sensory Harmony
-- **Visual**: Balanced contrast with comfortable brightness
-- **Spatial**: Intuitive use of depth and perspective
-- **Temporal**: Rhythmic animations that feel alive
-- **Interactive**: Responsive feedback that feels immediate
-- **Aesthetic**: Clean, purposeful design that inspires creativity
+### Canvas-Specific Optimizations
+- **High-DPI Scaling**: Automatic device pixel ratio handling
+- **Efficient Clearing**: Full canvas clear on each frame
+- **Batched Rendering**: Single render per frame via requestAnimationFrame
+- **Mathematical Precision**: No DOM layout calculations
+- **Memory Efficiency**: Single Canvas element vs. hundreds of DOM nodes
+
+### Render Performance
+- **60fps Target**: Consistent smooth animations
+- **Hardware Acceleration**: Canvas 2D context optimization
+- **Minimal State Changes**: Efficient Canvas API usage
+- **Optimized Drawing**: Minimal path operations and state saves
 
 This revolutionary visualization system transforms the act of creating entity-relationship diagrams from a mechanical task into an inspiring creative experience, where technology becomes invisible and ideas flow naturally from thought to visual reality. 

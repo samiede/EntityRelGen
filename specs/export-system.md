@@ -1,7 +1,7 @@
-# Export System Specification
+# Export System Specification - Canvas-Based Data Model
 
 ## Overview
-The Export System provides functionality to serialize and export the current scene graph state, allowing users to save, share, or integrate their entity-relationship diagrams with external systems. The system offers both manual export and clipboard integration capabilities.
+The Export System provides comprehensive functionality to serialize and export the current Canvas-based scene graph state. The system offers JSON export with clipboard integration, supporting the Canvas entity data model with position, size, and visual properties.
 
 ## Export Interface
 
@@ -10,8 +10,8 @@ The export functionality is located in the "Scene Graph" control card within the
 
 **Interface Components:**
 - **Export Button**: Triggers scene graph generation and display
-- **Copy to Clipboard Button**: Copies scene graph to system clipboard
-- **Output Preview**: `<pre id="scene-output">` element for display
+- **Copy to Clipboard Button**: Copies scene graph to system clipboard with fallback support
+- **Output Preview**: `<pre id="scene-output">` element for formatted display
 
 ### Button Layout
 ```html
@@ -23,167 +23,19 @@ The export functionality is located in the "Scene Graph" control card within the
 </div>
 ```
 
-## Export Functions
+## Implemented Export Functions
 
 ### Primary Export Function: `exportSceneGraph()`
 
-**Current Implementation Status:**
-- **Function Declaration**: Referenced in HTML onclick handler
-- **Implementation**: Not present in current codebase
-- **Expected Behavior**: Generate and display scene graph representation
+**Implementation Status:** ✅ **Fully Implemented**
 
-**Intended Functionality:**
-1. **Data Collection**: Gather current entities and relationships
-2. **Serialization**: Convert data to exportable format
-3. **Display**: Show formatted output in preview area
+**Functionality:**
+1. **Canvas Data Collection**: Gathers current entities and relationships from Canvas data model
+2. **JSON Serialization**: Converts Canvas data to structured JSON format
+3. **Metadata Generation**: Includes version, timestamps, and statistics
+4. **Display Output**: Shows formatted JSON in preview area
 
-### Clipboard Function: `copySceneGraph()`
-
-**Current Implementation Status:**
-- **Function Declaration**: Referenced in HTML onclick handler
-- **Implementation**: Not present in current codebase
-- **Expected Behavior**: Copy scene graph to system clipboard
-
-**Intended Functionality:**
-1. **Scene Generation**: Generate scene graph data
-2. **Clipboard Integration**: Use Clipboard API or fallback methods
-3. **User Feedback**: Indicate successful copy operation
-
-## Data Serialization Architecture
-
-### Scene Graph Data Model
-The export system should serialize the complete application state:
-
-**Core Data Structure:**
-```javascript
-const sceneGraph = {
-  entities: [
-    {
-      name: String,
-      attributes: Array,
-      position: { x: Number, y: Number },
-      size: { width: Number, height: Number },
-      color: String
-    }
-  ],
-  relationships: [
-    {
-      source: String,
-      target: String,
-      label: String
-    }
-  ],
-  metadata: {
-    version: String,
-    created: Date,
-    entityCount: Number,
-    relationshipCount: Number
-  }
-}
-```
-
-### Entity Serialization
-Each entity should capture:
-
-**Positional Data:**
-```javascript
-{
-  position: {
-    x: entity.el.offsetLeft,
-    y: entity.el.offsetTop
-  },
-  size: {
-    width: entity.el.offsetWidth,
-    height: entity.el.offsetHeight
-  }
-}
-```
-
-**Visual Properties:**
-```javascript
-{
-  color: entity.color,
-  name: entity.name,
-  attributes: entity.attributes
-}
-```
-
-### Relationship Serialization
-Relationships maintain their current simple structure:
-```javascript
-{
-  source: relationship.source,
-  target: relationship.target,
-  label: relationship.label
-}
-```
-
-## Export Format Options
-
-### JSON Format (Recommended)
-**Advantages:**
-- Structured data representation
-- Easy parsing for re-import
-- Standard format for data exchange
-- Readable and editable
-
-**Example Output:**
-```json
-{
-  "entities": [
-    {
-      "name": "User",
-      "attributes": ["id", "name", "email"],
-      "position": { "x": 50, "y": 50 },
-      "size": { "width": 100, "height": 60 },
-      "color": "#ff5733"
-    }
-  ],
-  "relationships": [
-    {
-      "source": "User",
-      "target": "Order",
-      "label": "places"
-    }
-  ],
-  "metadata": {
-    "version": "1.0",
-    "created": "2024-01-01T00:00:00Z",
-    "entityCount": 2,
-    "relationshipCount": 1
-  }
-}
-```
-
-### Alternative Formats
-
-#### Simplified Text Format
-**Use Case**: Quick sharing and documentation
-**Example:**
-```
-ENTITIES:
-- User [id, name, email]
-- Order [id, amount, date]
-
-RELATIONSHIPS:
-- User → Order (places)
-- Order → Product (contains)
-```
-
-#### Graph Description Language
-**Use Case**: Integration with graph analysis tools
-**Example:**
-```
-digraph SceneGraph {
-  User [label="User\nid, name, email"];
-  Order [label="Order\nid, amount, date"];
-  User -> Order [label="places"];
-}
-```
-
-## Implementation Specifications
-
-### Export Function Implementation
+**Implementation:**
 ```javascript
 function exportSceneGraph() {
   const sceneData = {
@@ -191,12 +43,12 @@ function exportSceneGraph() {
       name: entity.name,
       attributes: entity.attributes,
       position: {
-        x: entity.el.offsetLeft,
-        y: entity.el.offsetTop
+        x: entity.x,
+        y: entity.y
       },
       size: {
-        width: entity.el.offsetWidth,
-        height: entity.el.offsetHeight
+        width: entity.width,
+        height: entity.height
       },
       color: entity.color
     })),
@@ -206,10 +58,14 @@ function exportSceneGraph() {
       label: rel.label
     })),
     metadata: {
-      version: "1.0",
+      version: "2.0-canvas",
       created: new Date().toISOString(),
       entityCount: entities.length,
-      relationshipCount: relationships.length
+      relationshipCount: relationships.length,
+      canvasSize: {
+        width: canvasWidth,
+        height: canvasHeight
+      }
     }
   };
   
@@ -218,7 +74,17 @@ function exportSceneGraph() {
 }
 ```
 
-### Clipboard Function Implementation
+### Clipboard Function: `copySceneGraph()`
+
+**Implementation Status:** ✅ **Fully Implemented with Fallback**
+
+**Functionality:**
+1. **Scene Generation**: Generates current scene graph data
+2. **Modern Clipboard API**: Uses navigator.clipboard when available
+3. **Fallback Support**: Legacy document.execCommand for older browsers
+4. **User Feedback**: Visual confirmation of copy operation
+
+**Implementation:**
 ```javascript
 function copySceneGraph() {
   exportSceneGraph(); // Generate current scene data
@@ -227,7 +93,6 @@ function copySceneGraph() {
   if (navigator.clipboard && window.isSecureContext) {
     // Modern Clipboard API
     navigator.clipboard.writeText(output).then(() => {
-      // Provide user feedback
       showCopyFeedback("Scene graph copied to clipboard!");
     }).catch(err => {
       console.error('Failed to copy: ', err);
@@ -256,12 +121,101 @@ function fallbackCopyToClipboard(text) {
 }
 ```
 
+## Canvas-Based Data Serialization
+
+### Canvas Entity Data Model
+The export system serializes Canvas entities with complete positional and visual data:
+
+**Canvas Entity Serialization:**
+```javascript
+{
+  name: entity.name,              // Entity identifier
+  attributes: entity.attributes,   // Array of attributes
+  position: {
+    x: entity.x,                  // Canvas X coordinate
+    y: entity.y                   // Canvas Y coordinate
+  },
+  size: {
+    width: entity.width,          // Entity width in pixels
+    height: entity.height         // Entity height in pixels
+  },
+  color: entity.color            // Semantic color value
+}
+```
+
+### Relationship Serialization
+Relationships maintain their simple structure:
+```javascript
+{
+  source: relationship.source,    // Source entity name
+  target: relationship.target,    // Target entity name
+  label: relationship.label      // Relationship description
+}
+```
+
+### Enhanced Metadata
+Canvas-based export includes additional metadata:
+```javascript
+{
+  version: "2.0-canvas",         // Canvas version identifier
+  created: "2024-01-01T00:00:00Z", // ISO timestamp
+  entityCount: 5,                // Total entities
+  relationshipCount: 8,          // Total relationships
+  canvasSize: {
+    width: 1200,                 // Canvas width
+    height: 800                  // Canvas height
+  }
+}
+```
+
+## Complete Export Format
+
+### JSON Structure
+**Comprehensive Export Format:**
+```json
+{
+  "entities": [
+    {
+      "name": "User",
+      "attributes": ["id", "name", "email", "created_at"],
+      "position": { "x": 150, "y": 200 },
+      "size": { "width": 120, "height": 80 },
+      "color": "#667eea"
+    },
+    {
+      "name": "Order", 
+      "attributes": ["id", "amount", "date", "status"],
+      "position": { "x": 400, "y": 300 },
+      "size": { "width": 120, "height": 80 },
+      "color": "#764ba2"
+    }
+  ],
+  "relationships": [
+    {
+      "source": "User",
+      "target": "Order", 
+      "label": "places"
+    }
+  ],
+  "metadata": {
+    "version": "2.0-canvas",
+    "created": "2024-01-01T12:00:00.000Z",
+    "entityCount": 2,
+    "relationshipCount": 1,
+    "canvasSize": {
+      "width": 1200,
+      "height": 800
+    }
+  }
+}
+```
+
 ## User Feedback System
 
 ### Copy Feedback Implementation
+**Visual Feedback Function:**
 ```javascript
 function showCopyFeedback(message) {
-  // Create temporary feedback element
   const feedback = document.createElement('div');
   feedback.textContent = message;
   feedback.style.cssText = `
@@ -288,112 +242,130 @@ function showCopyFeedback(message) {
 }
 ```
 
-## Export Validation
+### Success Feedback Messages
+- **Export Success**: "Scene graph exported!"
+- **Copy Success**: "Scene graph copied to clipboard!"
+- **Copy Failure**: "Copy failed. Please manually select and copy the text."
 
-### Data Integrity Checks
-Before export, the system should validate:
+## Alternative Export Formats
 
-**Entity Validation:**
-- All entities have valid names
-- Position and size data are numeric
-- Color values are valid hex codes
-- Attributes are properly formatted arrays
-
-**Relationship Validation:**
-- Source and target entities exist
-- Labels are non-empty strings
-- No circular references in critical relationships
-
-**System Validation:**
-- Current data state is consistent
-- No orphaned relationships
-- All DOM elements are properly positioned
-
-### Error Handling
+### Simplified Text Format
+**Use Case**: Quick sharing and documentation
 ```javascript
-function validateSceneData(sceneData) {
-  const errors = [];
-  
-  // Validate entities
-  sceneData.entities.forEach((entity, index) => {
-    if (!entity.name || typeof entity.name !== 'string') {
-      errors.push(`Entity ${index}: Invalid name`);
+function exportSimpleText() {
+  let output = "ENTITIES:\n";
+  entities.forEach(entity => {
+    output += `- ${entity.name}`;
+    if (entity.attributes.length > 0) {
+      output += ` [${entity.attributes.join(', ')}]`;
     }
-    if (!Array.isArray(entity.attributes)) {
-      errors.push(`Entity ${index}: Invalid attributes`);
-    }
-    if (typeof entity.position?.x !== 'number' || typeof entity.position?.y !== 'number') {
-      errors.push(`Entity ${index}: Invalid position`);
-    }
+    output += `\n`;
   });
   
-  // Validate relationships
-  sceneData.relationships.forEach((rel, index) => {
-    const sourceExists = sceneData.entities.some(e => e.name === rel.source);
-    const targetExists = sceneData.entities.some(e => e.name === rel.target);
-    
-    if (!sourceExists) {
-      errors.push(`Relationship ${index}: Source entity '${rel.source}' not found`);
-    }
-    if (!targetExists) {
-      errors.push(`Relationship ${index}: Target entity '${rel.target}' not found`);
-    }
+  output += "\nRELATIONSHIPS:\n";
+  relationships.forEach(rel => {
+    output += `- ${rel.source} → ${rel.target} (${rel.label})\n`;
   });
   
-  return errors;
+  return output;
 }
 ```
+
+### CSV Export for Entities
+**Use Case**: Spreadsheet integration
+```javascript
+function exportEntitiesCSV() {
+  let csv = "Name,X,Y,Width,Height,Color,Attributes\n";
+  entities.forEach(entity => {
+    csv += `"${entity.name}",${entity.x},${entity.y},${entity.width},${entity.height},"${entity.color}","${entity.attributes.join(';')}"\n`;
+  });
+  return csv;
+}
+```
+
+## Import Functionality (Future Enhancement)
+
+### JSON Import Structure
+**Potential Import Function:**
+```javascript
+function importSceneGraph(jsonData) {
+  try {
+    const sceneData = JSON.parse(jsonData);
+    
+    // Clear current scene
+    entities.length = 0;
+    relationships.length = 0;
+    
+    // Import entities
+    sceneData.entities.forEach(entityData => {
+      const entity = {
+        name: entityData.name,
+        attributes: entityData.attributes || [],
+        x: entityData.position.x,
+        y: entityData.position.y,
+        width: entityData.size.width,
+        height: entityData.size.height,
+        color: entityData.color
+      };
+      entities.push(entity);
+    });
+    
+    // Import relationships
+    sceneData.relationships.forEach(relData => {
+      relationships.push({
+        source: relData.source,
+        target: relData.target,
+        label: relData.label
+      });
+    });
+    
+    // Update UI and render
+    updateEntitySelectOptions();
+    updateEntityList();
+    updateRelationshipList();
+    requestRender();
+    
+  } catch (error) {
+    console.error('Import failed:', error);
+    alert('Failed to import scene graph. Please check the format.');
+  }
+}
+```
+
+## Performance Considerations
+
+### Export Optimization
+- **Direct Object Access**: No DOM element queries required
+- **Efficient Mapping**: Array.map for clean data transformation  
+- **JSON Serialization**: Native JSON.stringify for performance
+- **Memory Efficient**: No intermediate data structures
+
+### Large Dataset Support
+- **Streaming Export**: Potential for large scene graphs
+- **Chunked Processing**: For hundreds of entities
+- **Compression**: Optional gzip compression for large exports
+
+## Security Considerations
+
+### Data Sanitization
+- **XSS Prevention**: Text content properly escaped in JSON
+- **Input Validation**: Robust parsing for import functionality
+- **Safe References**: No executable code in exported data
+
+### Clipboard Security
+- **Secure Context**: Uses modern Clipboard API when available
+- **Fallback Safety**: Legacy method with proper cleanup
+- **User Control**: Clear feedback on copy operations
 
 ## Browser Compatibility
 
 ### Clipboard API Support
-- **Modern Browsers**: Chrome 66+, Firefox 63+, Safari 13.1+
-- **Secure Context**: HTTPS required for Clipboard API
-- **Fallback**: document.execCommand for older browsers
+- **Modern Browsers**: Full Clipboard API support
+- **Legacy Support**: document.execCommand fallback
+- **Feature Detection**: Graceful degradation based on browser capabilities
 
 ### JSON Support
-- **Universal Support**: All modern browsers support JSON
-- **Stringify Options**: Pretty printing with indentation
-- **Error Handling**: Handle circular references if present
+- **Universal Support**: JSON.stringify/parse available in all modern browsers
+- **Error Handling**: Robust error catching for malformed data
 
-## Security Considerations
-
-### Data Privacy
-- **Client-Side Only**: No server transmission of sensitive data
-- **Local Processing**: All serialization occurs in browser
-- **User Control**: Explicit user action required for export
-
-### Clipboard Security
-- **Permission-Based**: Modern browsers require user permission
-- **Secure Context**: HTTPS requirement for Clipboard API
-- **Fallback Safety**: Manual copy selection as backup
-
-## Performance Considerations
-
-### Export Efficiency
-- **Data Size**: JSON serialization scales with entity/relationship count
-- **DOM Access**: Position/size queries require DOM measurement
-- **Memory Usage**: Temporary objects created during serialization
-
-### Optimization Strategies
-- **Lazy Evaluation**: Generate export data only when requested
-- **Caching**: Cache positional data if frequent exports expected
-- **Chunked Processing**: For large diagrams, consider chunked serialization
-
-## Future Enhancement Opportunities
-
-### Import Functionality
-- **Reverse Process**: Parse and recreate scene from exported data
-- **File Upload**: Support for .json file import
-- **Validation**: Imported data validation and error handling
-
-### Export Formats
-- **Image Export**: Canvas-to-image conversion for visual sharing
-- **PDF Generation**: Document format for reports
-- **Various Text Formats**: CSV, XML, YAML alternatives
-
-### Advanced Features
-- **Selective Export**: Choose specific entities/relationships
-- **Template Creation**: Save reusable diagram templates
-- **Version Control**: Track changes and export history
-- **Compression**: Optimize export size for large diagrams 
+This Canvas-based export system provides comprehensive data serialization with modern clipboard integration, supporting the full Canvas entity data model while maintaining backwards compatibility and providing excellent user feedback. 

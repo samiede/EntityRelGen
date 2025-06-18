@@ -1,17 +1,20 @@
-# Entity Management Specification
+# Entity Management Specification - Canvas-Based Architecture
 
 ## Overview
-The Entity Management system handles the complete lifecycle of entities within the Entity Relationship Builder, including creation, modification, visualization, and deletion. Entities represent the primary objects in the scene graph with associated attributes and visual properties.
+The Entity Management system handles the complete lifecycle of entities within the Canvas-based Entity Relationship Builder. Entities are now pure JavaScript objects that are rendered on the HTML5 Canvas with mathematical precision and 60fps performance.
 
-## Entity Data Model
+## Canvas Entity Data Model
 
 ### Core Entity Structure
 ```javascript
 {
-  el: DOMElement,          // Reference to DOM element
-  name: String,            // Unique entity identifier
+  name: String,            // Entity identifier
   attributes: Array,       // List of entity attributes
-  color: String           // Visual background color
+  color: String,          // Base color for rendering
+  x: Number,              // Canvas X position
+  y: Number,              // Canvas Y position
+  width: Number,          // Entity width in pixels
+  height: Number          // Entity height in pixels
 }
 ```
 
@@ -21,26 +24,31 @@ The Entity Management system handles the complete lifecycle of entities within t
 - **Type**: String
 - **Requirements**: Non-empty, serves as identifier
 - **Validation**: Must be present for entity creation
-- **Usage**: Display text, relationship references, dropdown options
+- **Usage**: Canvas text rendering, relationship references, dropdown options
 
 #### Attributes
 - **Type**: Array of strings
 - **Input Format**: Multi-line textarea (one attribute per line)
-- **Processing**: Split by newline characters, trimmed
-- **Storage**: JSON serialized in DOM dataset
-- **Display**: Joined by newlines in edit interface
+- **Processing**: Split by newline, filtered for empty strings
+- **Display**: Rendered on Canvas if entity height allows
 
 #### Color
 - **Type**: Hexadecimal color string (#RRGGBB)
-- **Generation**: Random color assignment at creation
-- **Purpose**: Visual distinction between entities
-- **Persistence**: Stored in DOM dataset
+- **Generation**: Semantic color based on entity characteristics
+- **Purpose**: Canvas gradient generation and visual distinction
+- **Algorithm**: Hash-based semantic color assignment
 
-#### DOM Element
-- **Type**: HTML div element
-- **Classes**: `.entity`
-- **Positioning**: Absolute within canvas
-- **Interactivity**: Draggable, resizable
+#### Canvas Position
+- **x, y**: Canvas coordinates in pixels
+- **Constraints**: Bounded within Canvas dimensions
+- **Precision**: Floating-point for smooth positioning
+- **Updates**: Real-time during drag operations
+
+#### Dimensions
+- **width, height**: Entity size in pixels
+- **Default**: 120px × 80px for new entities
+- **Constraints**: Minimum viable size for text rendering
+- **Responsive**: Can be adjusted for attribute display
 
 ## Entity Creation Process
 
@@ -52,203 +60,306 @@ Location: Entity Creation Card in controls panel
 - `#entity-attributes`: Textarea for attributes (multi-line)
 - Submit button: "Add Entity"
 
-### Creation Workflow
+### Canvas-Based Creation Workflow
 1. **Input Validation**
    ```javascript
    const name = document.getElementById('entity-name').value.trim();
-   if (!name) return; // Prevent empty names
+   if (!name) {
+     // Show visual validation feedback
+     return;
+   }
    ```
 
 2. **Attribute Processing**
    ```javascript
-   const attributes = document.getElementById('entity-attributes').value.trim().split('\n');
+   const attributes = attributesText ? 
+     attributesText.split('\n').filter(attr => attr.trim()) : [];
    ```
 
-3. **Visual Property Generation**
+3. **Semantic Color Generation**
    ```javascript
-   const color = getRandomColor(); // Generate unique color
+   const color = getSemanticColor(name, attributes);
    ```
 
-4. **DOM Element Creation**
+4. **Position Calculation**
    ```javascript
-   const div = document.createElement('div');
-   div.classList.add('entity');
-   div.textContent = name;
-   div.style.backgroundColor = color;
+   const x = Math.max(50, Math.random() * (canvasWidth - 170));
+   const y = Math.max(50, Math.random() * (canvasHeight - 130));
    ```
 
-5. **Default Positioning and Sizing**
-   - **Position**: (50px, 50px) from top-left
-   - **Size**: 100px width × 60px height
-   - **Behavior**: User-resizable and draggable
-
-6. **Data Storage**
+5. **Entity Object Creation**
    ```javascript
-   div.dataset.name = name;
-   div.dataset.color = color;
-   div.dataset.attributes = JSON.stringify(attributes);
+   const entity = {
+     name: name,
+     attributes: attributes,
+     color: color,
+     x: Math.max(0, Math.min(canvasWidth - 120, x)),
+     y: Math.max(0, Math.min(canvasHeight - 80, y)),
+     width: 120,
+     height: 80
+   };
    ```
 
-7. **System Integration**
+6. **System Integration**
    - Add to entities array
-   - Append to canvas
-   - Enable drag functionality
    - Update dropdown options
-   - Refresh entity list display
+   - Request Canvas render
+   - Update entity management list
+
+### Enhanced Entity Creation Function
+```javascript
+function createEntityAt(x, y, name = 'New Entity', attributes = []) {
+  const color = getSemanticColor(name, attributes);
+  
+  const entity = {
+    name: name,
+    attributes: attributes,
+    color: color,
+    x: Math.max(0, Math.min(canvasWidth - 120, x)),
+    y: Math.max(0, Math.min(canvasHeight - 80, y)),
+    width: 120,
+    height: 80
+  };
+  
+  entities.push(entity);
+  updateEntitySelectOptions();
+  updateEntityList();
+  requestRender();
+  
+  return entity;
+}
+```
+
+## Canvas Rendering System
+
+### Entity Drawing Algorithm
+```javascript
+function drawEntity(entity) {
+  const isHovered = entity === hoveredEntity;
+  const isDragged = entity === dragTarget;
+  
+  // Create gradient for depth
+  const gradient = ctx.createLinearGradient(
+    entity.x, entity.y, 
+    entity.x + entity.width, entity.y + entity.height
+  );
+  gradient.addColorStop(0, entity.color);
+  gradient.addColorStop(1, ColorPalette.lighten(entity.color, 15));
+  
+  // Dynamic shadows for interaction feedback
+  if (isHovered || isDragged) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = isDragged ? 20 : 15;
+    ctx.shadowOffsetX = isDragged ? 0 : 2;
+    ctx.shadowOffsetY = isDragged ? 0 : 4;
+  }
+  
+  // Draw entity background
+  ctx.fillStyle = gradient;
+  ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
+  
+  if (isHovered || isDragged) {
+    ctx.restore();
+  }
+  
+  // Draw border with hover effects
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.lineWidth = isHovered ? 2 : 1;
+  ctx.strokeRect(entity.x, entity.y, entity.width, entity.height);
+  
+  // Render text and attributes
+  drawEntityText(entity);
+  if (entity.height > 60 && entity.attributes.length > 0) {
+    drawEntityAttributes(entity);
+  }
+}
+```
+
+### Text Rendering with Background
+```javascript
+function drawEntityText(entity) {
+  const centerX = entity.x + entity.width / 2;
+  const centerY = entity.y + entity.height / 2;
+  
+  // Set text properties
+  ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  ctx.fontWeight = '500';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  // Measure text for background
+  const textWidth = ctx.measureText(entity.name).width;
+  
+  // Draw text background for readability
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.fillRect(
+    centerX - textWidth/2 - 4, 
+    centerY - 8, 
+    textWidth + 8, 
+    16
+  );
+  
+  // Draw text
+  ctx.fillStyle = '#1d1d1f';
+  ctx.fillText(entity.name, centerX, centerY);
+}
+```
+
+## Canvas Interaction System
+
+### Hit Detection Algorithm
+```javascript
+function hitTest(pos) {
+  // Test entities from top to bottom (reverse order for layering)
+  for (let i = entities.length - 1; i >= 0; i--) {
+    const entity = entities[i];
+    if (pos.x >= entity.x && pos.x <= entity.x + entity.width &&
+        pos.y >= entity.y && pos.y <= entity.y + entity.height) {
+      return entity;
+    }
+  }
+  return null;
+}
+```
+
+### Drag and Drop System
+```javascript
+function handleMouseDown(e) {
+  mousePos = getMousePosition(e);
+  const hitEntity = hitTest(mousePos);
+  
+  if (hitEntity) {
+    isDragging = true;
+    dragTarget = hitEntity;
+    dragOffset = {
+      x: mousePos.x - hitEntity.x,
+      y: mousePos.y - hitEntity.y
+    };
+    canvas.style.cursor = 'grabbing';
+  }
+}
+
+function handleMouseMove(e) {
+  mousePos = getMousePosition(e);
+  
+  if (isDragging && dragTarget) {
+    // Update position with bounds checking
+    dragTarget.x = mousePos.x - dragOffset.x;
+    dragTarget.y = mousePos.y - dragOffset.y;
+    
+    // Keep entities within Canvas bounds
+    dragTarget.x = Math.max(0, Math.min(canvasWidth - dragTarget.width, dragTarget.x));
+    dragTarget.y = Math.max(0, Math.min(canvasHeight - dragTarget.height, dragTarget.y));
+    
+    requestRender();
+  } else {
+    // Handle hover effects
+    const hitEntity = hitTest(mousePos);
+    if (hitEntity !== hoveredEntity) {
+      hoveredEntity = hitEntity;
+      canvas.style.cursor = hitEntity ? 'grab' : 'default';
+      requestRender();
+    }
+  }
+}
+```
 
 ## Entity Editing System
 
-### Inline Editing Interface
-Each entity in the management list provides inline editing capabilities:
+### Control Panel Interface
+Each entity in the management list provides editing capabilities:
 
 **Name Editing:**
 - Input field pre-populated with current name
-- Real-time updates to entity display and references
-- Automatic dropdown option updates
+- Real-time updates to entity data and Canvas rendering
+- Automatic dropdown option synchronization
 
 **Attribute Editing:**
 - Textarea with current attributes (one per line)
-- Updates stored in DOM dataset
-- No visual change to canvas element
+- Updates entity data array
+- Triggers Canvas re-render for attribute display
 
 ### Edit Workflow
-1. **Name Change Handling**
-   ```javascript
-   nameInput.onchange = () => {
-     entity.name = nameInput.value;
-     entity.el.textContent = entity.name;
-     updateEntitySelectOptions();
-     updateLines();
-   };
-   ```
-
-2. **Attribute Updates**
-   ```javascript
-   textarea.onchange = () => {
-     entity.attributes = textarea.value.trim().split('\n');
-     entity.el.dataset.attributes = JSON.stringify(entity.attributes);
-   };
-   ```
-
-## Entity Display and Visualization
-
-### Canvas Representation
-- **Visual Element**: Rounded rectangle with entity name
-- **Background**: Randomly assigned color
-- **Positioning**: User-controlled via drag-and-drop
-- **Sizing**: User-controlled via CSS resize handles
-
-### Management List Representation
-Each entity appears as a summary card containing:
-- Name input field for editing
-- Attributes textarea for editing
-- Delete button for removal
-- Background color matching canvas entity
-
-## Entity Interaction Features
-
-### Drag and Drop Functionality
-**Implementation:** `makeDraggable(el)` function
-
-**Interaction Flow:**
-1. **Mouse Down**: Capture offset and initiate drag mode
-2. **Mouse Move**: Update position relative to canvas
-3. **Mouse Up**: End drag mode and clean up
-4. **Side Effects**: Trigger relationship line updates
-
-**Technical Details:**
 ```javascript
-el.addEventListener('mousedown', (e) => {
-  if (e.target !== el) return; // Prevent child element interference
-  isDragging = true;
-  offsetX = e.offsetX;
-  offsetY = e.offsetY;
-  document.body.style.userSelect = 'none'; // Prevent text selection
-});
+function updateEntityList() {
+  entityList.innerHTML = '';
+  entities.forEach((entity, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'entity-summary';
+    wrapper.style.backgroundColor = entity.color;
+
+    const nameInput = document.createElement('input');
+    nameInput.value = entity.name;
+    nameInput.onchange = () => {
+      entity.name = nameInput.value;
+      updateEntitySelectOptions();
+      requestRender(); // Canvas re-render
+    };
+    wrapper.appendChild(nameInput);
+
+    const textarea = document.createElement('textarea');
+    textarea.value = entity.attributes.join('\n');
+    textarea.onchange = () => {
+      entity.attributes = textarea.value.trim().split('\n').filter(attr => attr.trim());
+      requestRender(); // Canvas re-render
+    };
+    wrapper.appendChild(textarea);
+
+    // Delete button implementation
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = () => {
+      entities.splice(idx, 1);
+      updateEntityList();
+      updateEntitySelectOptions();
+      requestRender();
+    };
+    wrapper.appendChild(deleteBtn);
+
+    entityList.appendChild(wrapper);
+  });
+}
 ```
 
-### Resize Functionality
-- **CSS Property**: `resize: both`
-- **Constraints**: Minimum 50px width, 30px height
-- **Behavior**: Native browser resize handles
-- **Updates**: Automatic relationship line repositioning
+## Performance Optimizations
 
-## Entity Deletion System
+### Canvas-Specific Optimizations
+- **Batch Rendering**: All entities rendered in single frame
+- **Hover State Management**: Efficient hover detection and visual feedback
+- **Bounded Positioning**: Mathematical constraints prevent invalid positions
+- **Render Requests**: Optimized render loop prevents unnecessary draws
 
-### Deletion Interface
-- **Location**: Delete button in each entity summary card
-- **Label**: "Delete"
-- **Confirmation**: None (immediate deletion)
+### Memory Efficiency
+- **Pure Data Objects**: No DOM element overhead
+- **Array-Based Storage**: Simple entity array for optimal iteration
+- **Mathematical Operations**: Direct coordinate manipulation
 
-### Deletion Workflow
-1. **DOM Cleanup**: Remove entity element from canvas
-2. **Data Cleanup**: Remove from entities array
-3. **UI Updates**: 
-   - Refresh entity management list
-   - Update dropdown options
-   - Refresh relationship lines
-4. **Relationship Cleanup**: Orphaned relationships remain but cannot render
+### Visual Performance
+- **60fps Interactions**: Smooth drag and hover effects
+- **Hardware Acceleration**: Canvas 2D context optimization
+- **Gradient Caching**: Efficient color gradient generation
+- **Text Measurement**: Optimized text rendering with background
 
-### Deletion Impact
-- **Relationships**: Existing relationships with deleted entities become inactive
-- **References**: Entity removed from all dropdown selections
-- **Visual**: Canvas cleared of entity representation
+## Entity Lifecycle Management
 
-## Entity Synchronization System
+### Creation Lifecycle
+1. **User Input** → Form validation
+2. **Data Processing** → Pure object creation
+3. **Canvas Integration** → Add to entities array
+4. **Visual Rendering** → Canvas draw operation
+5. **UI Synchronization** → Update control panels
 
-### Multi-View Consistency
-The system maintains synchronization between:
-- Canvas visual representation
-- Management list interface
-- Dropdown option lists
-- Relationship system references
+### Update Lifecycle
+1. **Property Change** → Direct object mutation
+2. **Render Request** → Batched Canvas update
+3. **UI Refresh** → Control panel synchronization
 
-### Update Triggers
-**Automatic updates occur when:**
-- New entity created
-- Entity name changed
-- Entity deleted
-- System initialization
+### Deletion Lifecycle
+1. **User Action** → Delete button click
+2. **Data Cleanup** → Remove from entities array
+3. **Relationship Cleanup** → Orphaned relationships handled
+4. **Visual Update** → Canvas re-render
+5. **UI Update** → Control panel refresh
 
-### Synchronization Functions
-- `updateEntityList()`: Refreshes management interface
-- `updateEntitySelectOptions()`: Updates dropdown menus
-- `updateLines()`: Redraws relationship connections
-
-## Data Persistence
-
-### Current Implementation
-- **Storage**: In-memory JavaScript arrays
-- **Session**: Data lost on page refresh
-- **DOM Dataset**: Backup storage in element attributes
-
-### DOM Dataset Storage
-```javascript
-element.dataset.name = entityName;
-element.dataset.color = entityColor;
-element.dataset.attributes = JSON.stringify(attributeArray);
-```
-
-## Validation and Error Handling
-
-### Input Validation
-- **Name Required**: Empty names prevent entity creation
-- **Duplicate Names**: Currently allowed (potential conflict source)
-- **Attribute Format**: Flexible text input, split by newlines
-
-### Error Prevention
-- **Null Checks**: Validation before processing
-- **Default Values**: Fallback for missing data
-- **Safe References**: Existence checks before DOM manipulation
-
-## Performance Considerations
-
-### Optimization Strategies
-- **Lazy Updates**: UI refreshes only when necessary
-- **Cached References**: DOM elements stored for efficient access
-- **Minimal Redraws**: Targeted updates rather than full refreshes
-
-### Scalability Factors
-- **Memory Usage**: Linear growth with entity count
-- **DOM Performance**: Manageable for moderate entity numbers
-- **Event Handling**: One drag listener per entity 
+This Canvas-based entity management system provides superior performance, mathematical precision, and smooth 60fps interactions while maintaining a clean separation between data and presentation layers. 

@@ -1,25 +1,26 @@
-# Application Architecture Specification
+# Application Architecture Specification - Canvas-Based Rendering
 
 ## Overview
-The Entity Relationship Builder follows a client-side architecture pattern with separation of concerns between presentation, logic, and data management layers.
+The Entity Relationship Builder follows a high-performance client-side architecture with Canvas-based rendering for optimal performance and smooth 60fps interactions. The system uses a single HTML5 Canvas element for all visual rendering, eliminating DOM overhead and enabling hardware-accelerated graphics.
 
 ## Technical Architecture
 
 ### Core Technologies
-- **HTML5**: Semantic markup and structure
-- **CSS3**: Styling, layout, and visual presentation
-- **Vanilla JavaScript**: Business logic, event handling, and DOM manipulation
-- **SVG**: Vector graphics for relationship visualization
+- **HTML5**: Semantic markup and Canvas element
+- **CSS3**: Control panel styling and glassmorphic design
+- **Vanilla JavaScript**: Business logic, Canvas rendering, and event handling
+- **HTML5 Canvas**: High-performance 2D graphics rendering
+- **RequestAnimationFrame**: Smooth 60fps render loop
 
 ### Application Structure
 
 #### HTML Structure
 ```html
 <body>
-  <div id="canvas">           <!-- Visualization area -->
-    <svg id="lines"></svg>    <!-- Relationship rendering -->
+  <div id="canvas-container">     <!-- Canvas wrapper -->
+    <canvas id="main-canvas"></canvas>  <!-- High-performance rendering -->
   </div>
-  <div id="controls">         <!-- Control panels -->
+  <div id="controls">             <!-- Control panels -->
     <!-- Control cards for different functionalities -->
   </div>
 </body>
@@ -27,25 +28,43 @@ The Entity Relationship Builder follows a client-side architecture pattern with 
 
 #### CSS Architecture
 - **Layout System**: Flexbox-based split-panel design
-- **Component Styling**: Card-based control panels with consistent theming
-- **Responsive Elements**: Flexible entity sizing with resize capabilities
-- **Visual Hierarchy**: Layered z-index management for canvas elements
+- **Canvas Container**: Full-screen Canvas with glassmorphic styling
+- **Control Styling**: Performance-optimized glassmorphic panels
+- **Responsive Design**: Dynamic Canvas sizing with high-DPI support
 
 #### JavaScript Architecture
 
+##### Canvas State Management
+```javascript
+// Canvas state
+let canvasWidth = 0;
+let canvasHeight = 0;
+let devicePixelRatio = window.devicePixelRatio || 1;
+
+// Interaction state
+let isDragging = false;
+let dragTarget = null;
+let dragOffset = { x: 0, y: 0 };
+let mousePos = { x: 0, y: 0 };
+let hoveredEntity = null;
+```
+
 ##### Data Models
 ```javascript
-const entities = [];        // Array of entity objects
+const entities = [];        // Array of Canvas entity objects
 const relationships = [];   // Array of relationship objects
 ```
 
-**Entity Object Structure:**
+**Canvas Entity Object Structure:**
 ```javascript
 {
-  el: DOMElement,          // DOM reference
   name: String,            // Entity identifier
   attributes: Array,       // List of attributes
-  color: String           // Visual identifier
+  color: String,          // Visual identifier
+  x: Number,              // Canvas X position
+  y: Number,              // Canvas Y position
+  width: Number,          // Entity width
+  height: Number          // Entity height
 }
 ```
 
@@ -58,67 +77,105 @@ const relationships = [];   // Array of relationship objects
 }
 ```
 
-##### Core Functions
+##### Core Rendering Functions
 
-**Entity Management:**
-- `addCustomEntity()` - Creates new entities
-- `updateEntityList()` - Synchronizes entity display
-- `updateEntitySelectOptions()` - Updates dropdown options
+**Canvas Management:**
+- `initCanvas()` - Initialize Canvas with high-DPI support
+- `render()` - Main rendering function (60fps)
+- `requestRender()` - Optimized render request batching
 
-**Relationship Management:**
-- `createRelationship()` - Establishes entity connections
-- `updateRelationshipList()` - Manages relationship display
-- `updateLines()` - Renders visual connections
+**Drawing Functions:**
+- `drawEntities()` - Render all entities with gradients and effects
+- `drawRelationships()` - Render connections with mathematical precision
+- `drawGrid()` - Subtle alignment grid system
 
 **Interaction Handling:**
-- `makeDraggable()` - Implements drag-and-drop functionality
-- Event listeners for mouse interactions
+- `setupCanvasEvents()` - Mouse event listeners
+- `hitTest()` - Efficient entity collision detection
+- `handleMouseDown/Move/Up()` - Drag and drop system
 
-**Utility Functions:**
-- `getRandomColor()` - Generates entity colors
-- SVG rendering functions for visual elements
+**Entity Management:**
+- `createEntityAt()` - Canvas-based entity creation
+- `addCustomEntity()` - Form-based entity creation
+- `updateEntityList()` - Synchronize control panel
 
 ## Design Patterns
 
-### Observer Pattern
-- Real-time synchronization between data models and UI
-- Automatic updates when entities or relationships change
+### Canvas Rendering Pattern
+- **Single Canvas Element**: All visual content rendered on one Canvas
+- **Render Loop**: RequestAnimationFrame-based smooth animations
+- **Hit Testing**: Mathematical collision detection for interactions
+- **Dirty Rect Optimization**: Only render when changes occur
 
 ### Factory Pattern
-- Dynamic DOM element creation for entities and relationships
-- Consistent object instantiation patterns
+- **Entity Creation**: Consistent Canvas entity instantiation
+- **Render Functions**: Modular drawing component system
 
 ### Event-Driven Architecture
-- Mouse event handling for drag-and-drop interactions
-- Form event handling for user inputs
+- **Canvas Events**: Direct Canvas mouse interaction handling
+- **Render Events**: Optimized render request batching
+- **Data Events**: Model-view synchronization
+
+## Performance Architecture
+
+### Canvas Optimization
+```javascript
+// High-DPI Canvas setup
+canvas.width = canvasWidth * devicePixelRatio;
+canvas.height = canvasHeight * devicePixelRatio;
+ctx.scale(devicePixelRatio, devicePixelRatio);
+
+// Optimized render loop
+let renderRequested = false;
+function requestRender() {
+  if (!renderRequested) {
+    renderRequested = true;
+    requestAnimationFrame(() => {
+      render();
+      renderRequested = false;
+    });
+  }
+}
+```
+
+### Mathematical Precision
+- **Edge Intersection**: Geometric algorithms for perfect arrow positioning
+- **Hit Detection**: Efficient rectangular collision detection
+- **Smooth Curves**: Mathematical curve generation for relationships
 
 ## Data Flow
 
-1. **User Input** → Form controls capture user data
-2. **Data Processing** → JavaScript functions validate and process input
-3. **Model Updates** → Arrays are updated with new/modified data
-4. **View Synchronization** → UI elements are updated to reflect changes
-5. **Visual Rendering** → Canvas and SVG elements display current state
+1. **User Input** → Canvas events or form controls
+2. **Event Processing** → Canvas coordinate calculation and validation
+3. **Model Updates** → Pure JavaScript data arrays
+4. **Render Request** → Batched rendering via requestAnimationFrame
+5. **Canvas Drawing** → High-performance 2D graphics rendering
 
-## Performance Considerations
+## Performance Benefits
 
-### Optimization Strategies
-- **DOM Manipulation**: Minimal direct DOM access with cached references
-- **Event Delegation**: Efficient event handling for dynamic elements
-- **Rendering Optimization**: SVG updates only when necessary
-- **Memory Management**: Proper cleanup when removing entities
+### Rendering Performance
+- **60fps Animations**: Hardware-accelerated Canvas rendering
+- **Single Element**: No DOM overhead for visual elements
+- **Batched Updates**: Efficient render request batching
+- **Mathematical Precision**: Perfect positioning and connections
+
+### Memory Efficiency
+- **Low Memory Footprint**: Canvas vs. hundreds of DOM elements
+- **Garbage Collection**: Minimal object creation during rendering
+- **Event Optimization**: Single Canvas event handling
 
 ### Scalability Factors
-- In-memory storage suitable for moderate entity counts
-- SVG rendering performance for complex relationship networks
-- Event listener management for interactive elements
-
-## Security Considerations
-- **XSS Prevention**: Text content insertion without HTML interpretation
-- **Input Validation**: Basic validation for entity names and attributes
-- **Client-Side Only**: No server communication reduces attack surface
+- **Entity Capacity**: Hundreds of entities at 60fps
+- **Relationship Complexity**: Efficient mathematical connection rendering
+- **Interactive Performance**: Instant responsiveness for all operations
 
 ## Browser Compatibility
-- Modern browser support for HTML5, CSS3, and ES6+ features
-- SVG support for relationship visualization
-- Standard DOM APIs for maximum compatibility 
+- **Modern Canvas Support**: HTML5 Canvas 2D context
+- **High-DPI Support**: Device pixel ratio scaling
+- **RequestAnimationFrame**: Smooth animation support
+- **Modern JavaScript**: ES6+ features for optimal performance
+
+## Security Considerations
+- **Canvas Isolation**: No direct DOM manipulation for visual elements
+- **Input Validation**: Form-based data validation
+- **Client-Side Only**: No server communication reduces attack surface 

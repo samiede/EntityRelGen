@@ -1,7 +1,7 @@
-# User Interface Specification
+# User Interface Specification - Canvas-Based Architecture
 
 ## Overview
-The Entity Relationship Builder features a split-panel interface design optimized for simultaneous visualization and control operations. The interface prioritizes usability with clear visual hierarchy and intuitive interaction patterns.
+The Entity Relationship Builder features a split-panel interface optimized for Canvas-based visualization and control operations. The interface prioritizes performance with hardware-accelerated Canvas rendering and glassmorphic control panels.
 
 ## Layout Architecture
 
@@ -13,41 +13,120 @@ The Entity Relationship Builder features a split-panel interface design optimize
 │                                                         │
 │  ┌─────────────────────┐  ┌─────────────────────────┐   │
 │  │                     │  │                         │   │
-│  │    Canvas Area      │  │    Controls Panel       │   │
+│  │  Canvas Container   │  │    Controls Panel       │   │
 │  │    (flex: 2)        │  │    (flex: 1)            │   │
+│  │                     │  │                         │   │
+│  │  [Canvas Element]   │  │ [Glassmorphic Cards]    │   │
 │  │                     │  │                         │   │
 │  └─────────────────────┘  └─────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Canvas Area (`#canvas`)
-- **Purpose**: Primary workspace for entity visualization and interaction
-- **Dimensions**: Takes 2/3 of screen width, full viewport height
-- **Border**: 2px solid #ccc
-- **Positioning**: Relative container for absolute-positioned entities
-- **Overflow**: Hidden to contain draggable elements
-- **Child Elements**:
-  - SVG overlay for relationship lines
-  - Dynamic entity elements
+### Canvas Container (`#canvas-container`)
+- **Purpose**: High-performance Canvas wrapper for all visual content
+- **Dimensions**: Takes 2/3 of screen width, full viewport height minus margins
+- **Styling**: Glassmorphic background with rounded corners
+- **Contents**: Single HTML5 Canvas element for all rendering
+- **Overflow**: Hidden to contain Canvas interactions
+
+**Canvas Container CSS:**
+```css
+#canvas-container {
+  flex: 2;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  position: relative;
+  margin: 20px 10px 20px 20px;
+  height: calc(100vh - 40px);
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+```
+
+### Main Canvas Element (`#main-canvas`)
+- **Purpose**: All visual rendering (entities, relationships, grid)
+- **Dimensions**: 100% of container with high-DPI scaling
+- **Rendering**: Hardware-accelerated 2D graphics context
+- **Interactions**: Direct mouse event handling for precision
+- **Performance**: 60fps render loop with optimized updates
+
+**Canvas Element CSS:**
+```css
+#main-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 20px;
+  cursor: default;
+}
+```
 
 ### Controls Panel (`#controls`)
-- **Purpose**: Control interface for all application functions
-- **Dimensions**: Takes 1/3 of screen width, full viewport height
-- **Border**: Left border 2px solid #ccc
+- **Purpose**: Glassmorphic control interface for all application functions
+- **Dimensions**: Takes 1/3 of screen width, full viewport height minus margins
+- **Styling**: Performance-optimized glassmorphic design
 - **Scrolling**: Vertical scroll for overflow content (overflow-y: auto)
-- **Padding**: 10px internal spacing
+- **Performance**: Reduced backdrop filters for optimal rendering
 
-## Control Card System
+**Controls Panel CSS:**
+```css
+#controls {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px 20px 20px 10px;
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+```
 
-### Card Structure
-Each functional area is organized as a control card with consistent styling:
+## Canvas Rendering System
+
+### Entity Visualization
+Entities are rendered directly on Canvas with mathematical precision:
+
+**Canvas Entity Rendering:**
+- **Shape**: Rounded rectangles with gradient fills
+- **Colors**: Semantic color generation with gradient effects
+- **Text**: Professional typography with readable backgrounds
+- **Interactions**: Hover effects with dynamic shadows
+- **Performance**: 60fps smooth animations and transitions
+
+### Relationship Visualization
+Relationships use mathematical algorithms for perfect connections:
+
+**Canvas Relationship Rendering:**
+- **Lines**: Edge-to-edge connections with gradient strokes
+- **Arrows**: Mathematically precise directional indicators
+- **Labels**: Rounded background labels with optimal positioning
+- **Performance**: Hardware-accelerated drawing operations
+
+### Visual Effects
+- **Dynamic Grid**: Subtle alignment guides drawn on Canvas
+- **Hover States**: Real-time shadow and scaling effects
+- **Drag Feedback**: Smooth position updates with constraints
+- **High-DPI**: Automatic scaling for crisp visuals on all displays
+
+## Glassmorphic Control Card System
+
+### Performance-Optimized Card Structure
+Each functional area uses optimized glassmorphic styling:
 
 ```css
 .control-card {
-  border-radius: 10px;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #eee;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 ```
 
@@ -55,85 +134,103 @@ Each functional area is organized as a control card with consistent styling:
 
 #### 1. Entity Creation Card
 - **Title**: "Create Entity"
+- **Functionality**: Canvas entity creation with semantic colors
 - **Components**:
-  - Text input for entity name
-  - Textarea for attributes (multi-line)
-  - Submit button ("Add Entity")
+  - Text input for entity name (with validation feedback)
+  - Textarea for attributes (multi-line with filtering)
+  - Submit button with hover animations
 
 #### 2. Relationship Creation Card
 - **Title**: "Create Relationship"
+- **Functionality**: Mathematical relationship connections
 - **Components**:
-  - Source entity dropdown
-  - Target entity dropdown
-  - Relationship label input
-  - Submit button ("Add Relationship")
-  - Dynamic relationship list display
+  - Source entity dropdown (auto-populated)
+  - Target entity dropdown (auto-populated)
+  - Relationship label input (with validation)
+  - Submit button with success feedback
+  - Dynamic relationship list with delete buttons
 
 #### 3. Entity Management Card
 - **Title**: "Entities"
+- **Functionality**: Canvas entity data management
 - **Components**:
   - Dynamic list of entity summaries
-  - Individual entity editing interfaces
+  - Real-time editing interfaces
+  - Color-coded entity cards
 
 #### 4. Scene Graph Export Card
 - **Title**: "Scene Graph"
+- **Functionality**: Canvas data serialization and export
 - **Components**:
-  - Export button
-  - Copy to clipboard button
-  - Output preview area
+  - Export button (JSON generation)
+  - Copy to clipboard button (with fallback support)
+  - Formatted output preview area
 
-## Entity Visual Design
+## Advanced Form Element Styling
 
-### Entity Styling
-```css
-.entity {
-  position: absolute;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: move;
-  color: #000;
-  resize: both;
-  overflow: auto;
-  min-width: 50px;
-  min-height: 30px;
-}
-```
-
-### Visual Properties
-- **Shape**: Rounded rectangles (10px border-radius)
-- **Colors**: Randomly generated background colors
-- **Text**: Black text for contrast
-- **Sizing**: User-resizable with minimum constraints
-- **Positioning**: Draggable absolute positioning
-- **Cursor**: Move cursor to indicate interactivity
-
-## Form Element Styling
-
-### Consistent Form Design
+### Glassmorphic Form Design
 ```css
 input, textarea, select, button {
-  margin-top: 5px;
+  margin-top: 8px;
   display: block;
   width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 ```
 
-### Element Types
-- **Text Inputs**: Single-line text fields
-- **Textareas**: Multi-line text areas for attributes
-- **Select Dropdowns**: Entity selection for relationships
-- **Buttons**: Action triggers with consistent styling
+### Interactive States
+- **Focus States**: Color-changing borders with glow effects
+- **Hover States**: Subtle background lightening
+- **Validation**: Visual feedback for errors and success
+- **Animations**: Smooth transitions for all state changes
+
+### Button Styling
+```css
+button {
+  background: linear-gradient(145deg, 
+    rgba(0, 122, 255, 0.8) 0%,
+    rgba(0, 122, 255, 0.6) 100%);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(0, 122, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 122, 255, 0.3);
+  background: linear-gradient(145deg, 
+    rgba(0, 122, 255, 0.9) 0%,
+    rgba(0, 122, 255, 0.7) 100%);
+}
+```
 
 ## Visual Feedback Elements
+
+### Canvas Interaction Feedback
+- **Hover Cursors**: Context-aware cursor changes
+- **Drag States**: Visual feedback during entity movement
+- **Selection**: Clear visual indication of selected elements
+- **Boundaries**: Constraint visualization during interactions
 
 ### Entity Summary Cards
 ```css
 .entity-summary {
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  padding: 5px;
-  margin-bottom: 10px;
-  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 ```
 
@@ -143,60 +240,103 @@ input, textarea, select, button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8f8f8;
-  padding: 5px;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 10px 16px;
+  margin-top: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
 }
 ```
 
-## SVG Visualization Layer
+## Color System and Theming
 
-### SVG Container
-- **Positioning**: Absolute overlay covering entire canvas
-- **Pointer Events**: Disabled (pointer-events: none)
-- **Z-Index**: Behind entities (z-index: 0)
-- **Size**: 100% width and height of canvas
+### Intelligent Color Generation
+- **Semantic Colors**: Hash-based color assignment
+- **Gradient Systems**: Mathematical color harmonies
+- **Contrast Optimization**: Readable text on all backgrounds
+- **Color Consistency**: Matching between Canvas and UI elements
 
-### Visual Elements
-- **Relationship Lines**: 2px stroke width, #555 color
-- **Arrow Markers**: Directional indicators for relationships
-- **Text Labels**: Centered on relationship lines
+### Theme Properties
+- **Background**: Dynamic gradient (135deg, #667eea to #764ba2)
+- **Glass Effects**: Subtle transparency with backdrop filters
+- **Shadows**: Layered shadow systems for depth
+- **Typography**: Professional font stack with optimal weights
 
-## Color System
+## Performance Optimizations
 
-### Color Generation
-- **Method**: Random hexadecimal color generation
-- **Format**: 6-digit hex codes (#RRGGBB)
-- **Application**: Entity background colors for visual distinction
+### Canvas-Specific Optimizations
+- **High-DPI Support**: Automatic device pixel ratio scaling
+- **Render Batching**: Single render per frame via requestAnimationFrame
+- **Interaction Efficiency**: Direct Canvas event handling
+- **Memory Management**: Optimized object creation and cleanup
 
-### Color Usage
-- **Entity Backgrounds**: Randomly generated unique colors
-- **UI Elements**: Consistent grayscale palette
-- **Text**: High contrast black text on colored backgrounds
+### UI Performance
+- **Reduced Backdrop Filters**: Optimized for performance while maintaining aesthetics
+- **Transition Targeting**: Specific property transitions vs. 'all'
+- **Shadow Optimization**: Single shadows instead of complex multi-layer effects
+- **Animation Constraints**: Performance-conscious animation choices
 
 ## Responsive Design Considerations
 
-### Flexibility Features
-- **Entity Resizing**: CSS resize property for user control
-- **Flexible Layout**: Flexbox for panel proportions
-- **Scrollable Controls**: Overflow handling for control panel
+### Adaptive Canvas Sizing
+- **Dynamic Scaling**: Canvas adapts to viewport changes
+- **High-DPI Handling**: Automatic scaling for retina displays
+- **Boundary Management**: Entity constraints within Canvas bounds
+- **Zoom Considerations**: Potential for future zoom functionality
 
-### Accessibility Features
-- **Cursor Indicators**: Visual feedback for interactive elements
-- **Color Contrast**: Black text on colored backgrounds
-- **Clear Visual Hierarchy**: Distinct sections and groupings
+### Control Panel Adaptability
+- **Flexible Layout**: Flexbox-based proportional sizing
+- **Scrollable Content**: Overflow handling for varying content
+- **Form Responsiveness**: Input elements adapt to container width
 
-## Interaction Design
+## Accessibility Features
 
-### User Interaction Patterns
-- **Drag and Drop**: Primary interaction for entity positioning
-- **Form Submission**: Standard form controls for data entry
-- **Dynamic Updates**: Real-time visual feedback
-- **Delete Actions**: Clear deletion buttons with confirmation
+### Canvas Accessibility
+- **Keyboard Navigation**: Potential for future keyboard controls
+- **Screen Reader**: Alternative text descriptions for Canvas content
+- **High Contrast**: Support for high contrast preferences
+- **Reduced Motion**: Respect for motion sensitivity preferences
 
-### Visual States
-- **Hover States**: Cursor changes for interactive elements
-- **Active States**: Visual feedback during interactions
-- **Selected States**: Focus indicators for form elements 
+### Control Panel Accessibility
+- **Focus Management**: Clear focus indicators
+- **Color Contrast**: High contrast text on glassmorphic backgrounds
+- **Label Association**: Proper form label relationships
+- **Error Feedback**: Clear validation messages
+
+### Accessibility CSS
+```css
+@media (prefers-contrast: high) {
+  .entity {
+    border: 2px solid #000;
+    background: #fff;
+    color: #000;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+## Advanced Interaction Patterns
+
+### Canvas Interactions
+- **Precise Dragging**: Pixel-perfect entity positioning
+- **Double-Click Creation**: Quick entity creation at cursor position
+- **Hover Detection**: Real-time entity highlighting
+- **Boundary Constraints**: Smooth constraint handling during drag
+
+### Form Interactions
+- **Real-Time Validation**: Immediate feedback on input errors
+- **Success Animations**: Visual confirmation of successful actions
+- **Loading States**: Clear indication during processing
+- **Auto-Population**: Dynamic dropdown updates
+
+This Canvas-based user interface provides a revolutionary combination of high-performance graphics rendering with beautiful, functional controls, creating an optimal environment for entity-relationship diagram creation and management. 
