@@ -178,4 +178,86 @@ function requestRender() {
 ## Security Considerations
 - **Canvas Isolation**: No direct DOM manipulation for visual elements
 - **Input Validation**: Form-based data validation
-- **Client-Side Only**: No server communication reduces attack surface 
+- **Client-Side Only**: No server communication reduces attack surface
+
+# System Architecture
+
+## Overall Architecture
+
+### Canvas-Based Architecture
+
+## State Management
+
+### Application State
+
+### Interaction State
+The system maintains sophisticated interaction state for smooth user experience:
+
+```javascript
+// Core interaction state
+let isDragging = false;         // Entity drag operation active
+let isResizing = false;         // Entity resize operation active
+let dragTarget = null;          // Entity being dragged
+let resizeTarget = null;        // Entity being resized
+let resizeHandle = null;        // Resize handle direction ('se')
+let dragOffset = { x: 0, y: 0 }; // Drag offset for smooth movement
+let mousePos = { x: 0, y: 0 };  // Current mouse position
+let hoveredEntity = null;       // Currently hovered entity
+```
+
+**Interaction State Management**
+- **Mutual Exclusion**: Drag and resize operations are mutually exclusive
+- **State Transitions**: Clean state transitions between different interaction modes
+- **State Cleanup**: Proper state reset on interaction completion
+- **State Persistence**: Maintains state across mouse events for smooth interactions
+
+### Canvas State
+
+## Event System
+
+### Mouse Event Handling
+
+#### Resize Event Integration
+The resize system seamlessly integrates with the existing mouse event architecture:
+
+**Mouse Down Handler**
+- Checks for resize handle interaction before drag detection
+- Sets resize state variables (`isResizing`, `resizeTarget`, `resizeHandle`)
+- Updates cursor to indicate resize mode
+- Prevents drag operation when resize is active
+
+**Mouse Move Handler**
+- Processes resize operations when `isResizing` is true
+- Applies size constraints (minimum dimensions, canvas boundaries)
+- Updates entity dimensions in real-time
+- Maintains cursor feedback based on hover state
+- Handles cursor changes for resize handle detection
+
+**Mouse Up Handler**
+- Cleans up all interaction state (drag and resize)
+- Resets state variables to default values
+- Updates cursor based on current hover state
+- Ensures proper state cleanup for next interaction
+
+**Resize Logic Flow**
+```javascript
+if (isResizing && resizeTarget) {
+  // Apply size constraints
+  const minWidth = 80, minHeight = 60;
+  
+  // Calculate new dimensions
+  resizeTarget.width = Math.max(minWidth, mousePos.x - resizeTarget.x);
+  resizeTarget.height = Math.max(minHeight, mousePos.y - resizeTarget.y);
+  
+  // Enforce canvas boundaries
+  resizeTarget.width = Math.min(resizeTarget.width, canvasWidth - resizeTarget.x);
+  resizeTarget.height = Math.min(resizeTarget.height, canvasHeight - resizeTarget.y);
+  
+  // Trigger re-render
+  requestRender();
+}
+```
+
+## Data Flow
+
+## Performance Considerations 

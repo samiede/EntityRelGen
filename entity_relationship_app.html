@@ -248,7 +248,10 @@
     
     // Interaction state
     let isDragging = false;
+    let isResizing = false;
     let dragTarget = null;
+    let resizeTarget = null;
+    let resizeHandle = null; // 'se' for southeast corner
     let dragOffset = { x: 0, y: 0 };
     let mousePos = { x: 0, y: 0 };
     let hoveredEntity = null;
@@ -335,11 +338,33 @@
       return null;
     }
     
+    function getResizeHandle(pos, entity) {
+      if (!entity) return null;
+      
+      const handleSize = 8;
+      const cornerX = entity.x + entity.width;
+      const cornerY = entity.y + entity.height;
+      
+      // Check if mouse is over southeast corner resize handle
+      if (pos.x >= cornerX - handleSize && pos.x <= cornerX + handleSize &&
+          pos.y >= cornerY - handleSize && pos.y <= cornerY + handleSize) {
+        return 'se';
+      }
+      
+      return null;
+    }
+    
     function handleMouseDown(e) {
       mousePos = getMousePosition(e);
       const hitEntity = hitTest(mousePos);
+      const resizeHandleType = getResizeHandle(mousePos, hitEntity);
       
-      if (hitEntity) {
+      if (resizeHandleType) {
+        isResizing = true;
+        resizeTarget = hitEntity;
+        resizeHandle = resizeHandleType;
+        canvas.style.cursor = 'se-resize';
+      } else if (hitEntity) {
         isDragging = true;
         dragTarget = hitEntity;
         dragOffset = {
@@ -353,7 +378,22 @@
     function handleMouseMove(e) {
       mousePos = getMousePosition(e);
       
-      if (isDragging && dragTarget) {
+      if (isResizing && resizeTarget) {
+        // Resize entity
+        const minWidth = 80;
+        const minHeight = 60;
+        
+        if (resizeHandle === 'se') {
+          resizeTarget.width = Math.max(minWidth, mousePos.x - resizeTarget.x);
+          resizeTarget.height = Math.max(minHeight, mousePos.y - resizeTarget.y);
+          
+          // Keep within canvas bounds
+          resizeTarget.width = Math.min(resizeTarget.width, canvasWidth - resizeTarget.x);
+          resizeTarget.height = Math.min(resizeTarget.height, canvasHeight - resizeTarget.y);
+        }
+        
+        requestRender();
+      } else if (isDragging && dragTarget) {
         dragTarget.x = mousePos.x - dragOffset.x;
         dragTarget.y = mousePos.y - dragOffset.y;
         
@@ -363,21 +403,42 @@
         
         requestRender();
       } else {
-        // Handle hover effects
+        // Handle hover effects and cursor changes
         const hitEntity = hitTest(mousePos);
+        const resizeHandleType = getResizeHandle(mousePos, hitEntity);
+        
+        if (resizeHandleType) {
+          canvas.style.cursor = 'se-resize';
+        } else if (hitEntity) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+        
         if (hitEntity !== hoveredEntity) {
           hoveredEntity = hitEntity;
-          canvas.style.cursor = hitEntity ? 'grab' : 'default';
           requestRender();
         }
       }
     }
     
     function handleMouseUp(e) {
-      if (isDragging) {
-        isDragging = false;
-        dragTarget = null;
-        canvas.style.cursor = hoveredEntity ? 'grab' : 'default';
+      isDragging = false;
+      isResizing = false;
+      dragTarget = null;
+      resizeTarget = null;
+      resizeHandle = null;
+      
+      // Update cursor based on current hover state
+      const hitEntity = hitTest(mousePos);
+      const resizeHandleType = getResizeHandle(mousePos, hitEntity);
+      
+      if (resizeHandleType) {
+        canvas.style.cursor = 'se-resize';
+      } else if (hitEntity) {
+        canvas.style.cursor = 'grab';
+      } else {
+        canvas.style.cursor = 'default';
       }
     }
     
@@ -535,6 +596,22 @@
       
       // Draw text at top-left corner with padding
       ctx.fillText(entity.name, entity.x + 8, entity.y + 8);
+      
+      // Draw resize handle if entity is hovered
+      if (isHovered) {
+        const handleSize = 6;
+        const cornerX = entity.x + entity.width;
+        const cornerY = entity.y + entity.height;
+        
+        // Draw resize handle square
+        ctx.fillStyle = '#4A90E2';
+        ctx.fillRect(cornerX - handleSize, cornerY - handleSize, handleSize * 2, handleSize * 2);
+        
+        // Draw resize handle border
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cornerX - handleSize, cornerY - handleSize, handleSize * 2, handleSize * 2);
+      }
     }
     
     function drawRelationships() {
@@ -846,58 +923,81 @@
       }, 2000);
     }
 
-    // Edge intersection calculation (reused from Canvas drawing)
+    // Edge intersection calculation (robust version for overlapping entities)
     function calculateEdgeIntersection(center, targetCenter, bounds) {
       const dx = targetCenter.x - center.x;
       const dy = targetCenter.y - center.y;
       
-      // Handle zero division cases
-      if (dx === 0 && dy === 0) {
-        return center; // Entities are overlapping
+      // Handle overlapping entities case
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+        // Entities are essentially overlapping, return a safe edge point
+        return {
+          x: center.x + (bounds.right - bounds.left) / 2,
+          y: bounds.top
+        };
       }
       
-      if (dx === 0) {
-        // Vertical line
+      // Calculate all possible intersection points with rectangle edges
+      const intersections = [];
+      
+      // Right edge intersection
+      if (dx !== 0) {
+        const t = (bounds.right - center.x) / dx;
+        const y = center.y + t * dy;
+        if (t > 0 && y >= bounds.top && y <= bounds.bottom) {
+          intersections.push({ x: bounds.right, y: y, distance: t });
+        }
+      }
+      
+      // Left edge intersection
+      if (dx !== 0) {
+        const t = (bounds.left - center.x) / dx;
+        const y = center.y + t * dy;
+        if (t > 0 && y >= bounds.top && y <= bounds.bottom) {
+          intersections.push({ x: bounds.left, y: y, distance: t });
+        }
+      }
+      
+      // Bottom edge intersection
+      if (dy !== 0) {
+        const t = (bounds.bottom - center.y) / dy;
+        const x = center.x + t * dx;
+        if (t > 0 && x >= bounds.left && x <= bounds.right) {
+          intersections.push({ x: x, y: bounds.bottom, distance: t });
+        }
+      }
+      
+      // Top edge intersection
+      if (dy !== 0) {
+        const t = (bounds.top - center.y) / dy;
+        const x = center.x + t * dx;
+        if (t > 0 && x >= bounds.left && x <= bounds.right) {
+          intersections.push({ x: x, y: bounds.top, distance: t });
+        }
+      }
+      
+      // Find the closest valid intersection
+      if (intersections.length > 0) {
+        intersections.sort((a, b) => a.distance - b.distance);
+        const closest = intersections[0];
+        return { x: closest.x, y: closest.y };
+      }
+      
+      // Fallback: return the closest edge point
+      const centerX = bounds.left + (bounds.right - bounds.left) / 2;
+      const centerY = bounds.top + (bounds.bottom - bounds.top) / 2;
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
         return {
-          x: center.x,
+          x: dx > 0 ? bounds.right : bounds.left,
+          y: centerY
+        };
+      } else {
+        return {
+          x: centerX,
           y: dy > 0 ? bounds.bottom : bounds.top
         };
       }
-      
-      if (dy === 0) {
-        // Horizontal line
-        return {
-          x: dx > 0 ? bounds.right : bounds.left,
-          y: center.y
-        };
-      }
-      
-      // Calculate intersection with rectangle edges
-      const slope = dy / dx;
-      
-      let intersectionX, intersectionY;
-      
-      if (Math.abs(dx) > Math.abs(dy)) {
-        // Intersect with left or right edge
-        if (dx > 0) {
-          intersectionX = bounds.right;
-          intersectionY = center.y + slope * (bounds.right - center.x);
-        } else {
-          intersectionX = bounds.left;
-          intersectionY = center.y + slope * (bounds.left - center.x);
-        }
-      } else {
-        // Intersect with top or bottom edge
-        if (dy > 0) {
-          intersectionY = bounds.bottom;
-          intersectionX = center.x + (bounds.bottom - center.y) / slope;
-        } else {
-          intersectionY = bounds.top;
-          intersectionX = center.x + (bounds.top - center.y) / slope;
-        }
-      }
-      
-      return { x: intersectionX, y: intersectionY };
     }
 
     // Export System Implementation

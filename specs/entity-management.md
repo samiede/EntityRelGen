@@ -304,24 +304,40 @@ function updateEntityList() {
 }
 ```
 
-## Performance Optimizations
+## Entity Resizing
 
-### Canvas-Specific Optimizations
-- **Batch Rendering**: All entities rendered in single frame
-- **Hover State Management**: Efficient hover detection and visual feedback
-- **Bounded Positioning**: Mathematical constraints prevent invalid positions
-- **Render Requests**: Optimized render loop prevents unnecessary draws
+The Canvas-based system provides intuitive entity resizing through visual resize handles:
 
-### Memory Efficiency
-- **Pure Data Objects**: No DOM element overhead
-- **Array-Based Storage**: Simple entity array for optimal iteration
-- **Mathematical Operations**: Direct coordinate manipulation
+#### Resize Handle System
+- **Visual Indicator**: Blue resize handle appears in the bottom-right corner when hovering over an entity
+- **Handle Dimensions**: 12x12 pixel interactive area (6px from corner in each direction)
+- **Visual Style**: Blue (#4A90E2) square with white border for clear visibility
+- **Cursor Feedback**: Cursor changes to "se-resize" when hovering over resize handle
 
-### Visual Performance
-- **60fps Interactions**: Smooth drag and hover effects
-- **Hardware Acceleration**: Canvas 2D context optimization
-- **Gradient Caching**: Efficient color gradient generation
-- **Text Measurement**: Optimized text rendering with background
+#### Resize Interaction
+- **Activation**: Click and drag on the resize handle to begin resizing
+- **Resize Direction**: Southeast corner handle supports diagonal resizing (width and height simultaneously)
+- **Real-time Feedback**: Entity dimensions update in real-time during drag operation
+- **Smooth Performance**: Resize operations trigger render requests for 60fps updates
+
+#### Size Constraints
+- **Minimum Dimensions**: 
+  - Minimum width: 80 pixels
+  - Minimum height: 60 pixels
+- **Canvas Boundaries**: Entities cannot be resized beyond canvas boundaries
+- **Automatic Clamping**: Resize operations respect both minimum size and canvas bounds
+
+#### Technical Implementation
+- **State Management**: Uses `isResizing`, `resizeTarget`, and `resizeHandle` state variables
+- **Mouse Event Handling**: Integrated with existing mouse event system
+- **Collision Detection**: `getResizeHandle()` function determines if mouse is over resize handle
+- **Coordinate System**: Uses Canvas coordinate system for precise positioning
+
+#### User Experience
+- **Discoverability**: Resize handles only appear on hover to maintain clean interface
+- **Visual Feedback**: Entity shadows and highlighting indicate interactive state
+- **Cursor Changes**: Contextual cursor changes guide user interaction
+- **Responsive Design**: Works seamlessly with existing drag-and-drop functionality
 
 ## Entity Lifecycle Management
 

@@ -383,6 +383,56 @@ function handleMouseMove(e) {
 }
 ```
 
+### Entity Resizing System
+
+The Canvas provides sophisticated entity resizing capabilities with visual feedback:
+
+#### Resize Handle Rendering
+- **Conditional Visibility**: Resize handles only render when entity is hovered
+- **Handle Positioning**: Precisely positioned at bottom-right corner of entity
+- **Visual Design**: 
+  - Handle size: 12x12 pixels (6px radius from corner)
+  - Primary color: #4A90E2 (blue)
+  - Border: White 1px outline for contrast
+  - Shape: Square with sharp corners
+
+#### Resize Interaction Logic
+- **Hit Detection**: `getResizeHandle()` function calculates mouse proximity to resize area
+- **State Management**: 
+  - `isResizing`: Boolean flag for resize operation
+  - `resizeTarget`: Reference to entity being resized
+  - `resizeHandle`: Direction identifier ('se' for southeast)
+- **Mouse Event Integration**: Resize logic integrated with existing mouse handling system
+
+#### Resize Constraints and Calculations
+- **Minimum Size Enforcement**: 
+  - Width minimum: 80 pixels
+  - Height minimum: 60 pixels
+- **Boundary Checking**: Prevents resizing beyond canvas boundaries
+- **Real-time Updates**: Entity dimensions updated during mouse movement
+- **Mathematical Precision**: Uses direct coordinate manipulation for smooth resizing
+
+#### Visual Feedback During Resizing
+- **Cursor Changes**: 
+  - "grab" cursor over entity body
+  - "se-resize" cursor over resize handle
+  - Context-aware cursor updates based on hover state
+- **Entity Highlighting**: Maintains existing hover and drag visual effects
+- **Smooth Performance**: 60fps updates through requestAnimationFrame integration
+
+#### Resize Algorithm
+```javascript
+// Simplified resize logic
+if (resizeHandle === 'se') {
+  entity.width = Math.max(minWidth, mousePos.x - entity.x);
+  entity.height = Math.max(minHeight, mousePos.y - entity.y);
+  
+  // Clamp to canvas boundaries
+  entity.width = Math.min(entity.width, canvasWidth - entity.x);
+  entity.height = Math.min(entity.height, canvasHeight - entity.y);
+}
+```
+
 ## Visual Effects - Canvas-Specific Enhancements
 
 ### Dynamic Grid System

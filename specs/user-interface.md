@@ -341,4 +341,45 @@ button:hover {
 - **Loading States**: Clear indication during processing
 - **Auto-Population**: Dynamic dropdown updates
 
+#### Entity Resize Interactions
+The Canvas system provides intuitive entity resizing with comprehensive visual feedback:
+
+**Resize Handle Discovery**
+- Resize handles appear as blue squares when hovering over entities
+- Positioned precisely at the bottom-right corner of each entity
+- 12x12 pixel interactive area with white border for visibility
+- Only visible on hover to maintain clean interface design
+
+**Cursor Feedback System**
+- **Default State**: Standard arrow cursor over empty canvas
+- **Entity Hover**: "grab" cursor when hovering over entity body
+- **Resize Handle Hover**: "se-resize" cursor when over resize handle
+- **Active Dragging**: "grabbing" cursor during drag operations
+- **Active Resizing**: "se-resize" cursor maintained during resize operations
+
+**Resize Interaction Flow**
+1. User hovers over entity → resize handle appears
+2. User hovers over resize handle → cursor changes to "se-resize"
+3. User clicks and drags → entity resizes in real-time
+4. User releases mouse → resize operation completes
+5. Cursor updates based on current hover state
+
+**Visual Feedback During Resizing**
+- Real-time entity dimension updates at 60fps
+- Entity maintains hover highlighting during resize
+- Resize handle remains visible and interactive
+- Smooth transitions between interaction states
+
+**Accessibility Considerations**
+- High contrast resize handles (#4A90E2 blue with white border)
+- Clear cursor feedback for different interaction modes
+- Visual boundaries prevent accidental resizing beyond canvas
+- Minimum size constraints ensure entities remain usable
+
+### Keyboard Interactions
+// ... existing code ...
+
+## Responsive Design
+// ... existing code ...
+
 This Canvas-based user interface provides a revolutionary combination of high-performance graphics rendering with beautiful, functional controls, creating an optimal environment for entity-relationship diagram creation and management. 
